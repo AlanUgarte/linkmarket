@@ -12,6 +12,7 @@ export const CATEGORIES: Category[] = [
   { slug: 'hogar', nombre: 'Hogar', emoji: '🏠', descripcion: 'Todo para que tu casa funcione mejor.' },
   { slug: 'tecnologia', nombre: 'Tecnología', emoji: '💡', descripcion: 'Lo último en tecnología, seleccionado a mano.' },
   { slug: 'celulares', nombre: 'Celulares', emoji: '📱', descripcion: 'Celulares y accesorios al mejor precio.' },
+  { slug: 'computacion', nombre: 'Computación', emoji: '💻', descripcion: 'PC armadas, componentes, monitores y periféricos.' },
   { slug: 'gadgets', nombre: 'Gadgets', emoji: '🔌', descripcion: 'Accesorios y gadgets que se hacen virales.' },
   { slug: 'cocina', nombre: 'Cocina', emoji: '🍳', descripcion: 'Herramientas de cocina que sí valen la pena.' },
   { slug: 'mascotas', nombre: 'Mascotas', emoji: '🐶', descripcion: 'Todo para consentir a tu mejor amigo.' },
