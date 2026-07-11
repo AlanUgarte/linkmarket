@@ -1,0 +1,44 @@
+import { Category } from './types';
+
+/**
+ * Fuente única de verdad para las categorías del sitio.
+ * El "slug" debe coincidir (en minúsculas, sin tildes) con lo que se
+ * escriba en la columna "Categoria" de Google Sheets, salvo las
+ * categorías virtuales (ofertas del día / más vendidos) que se calculan
+ * a partir de otras columnas.
+ */
+export const CATEGORIES: Category[] = [
+  { slug: 'auto', nombre: 'Auto', emoji: '🚗', descripcion: 'Accesorios, repuestos y tecnología para tu vehículo.' },
+  { slug: 'hogar', nombre: 'Hogar', emoji: '🏠', descripcion: 'Todo para que tu casa funcione mejor.' },
+  { slug: 'tecnologia', nombre: 'Tecnología', emoji: '💡', descripcion: 'Lo último en tecnología, seleccionado a mano.' },
+  { slug: 'celulares', nombre: 'Celulares', emoji: '📱', descripcion: 'Celulares y accesorios al mejor precio.' },
+  { slug: 'gadgets', nombre: 'Gadgets', emoji: '🔌', descripcion: 'Accesorios y gadgets que se hacen virales.' },
+  { slug: 'cocina', nombre: 'Cocina', emoji: '🍳', descripcion: 'Herramientas de cocina que sí valen la pena.' },
+  { slug: 'mascotas', nombre: 'Mascotas', emoji: '🐶', descripcion: 'Todo para consentir a tu mejor amigo.' },
+  { slug: 'herramientas', nombre: 'Herramientas', emoji: '🛠', descripcion: 'Herramientas profesionales al mejor precio.' },
+  { slug: 'gaming', nombre: 'Gaming', emoji: '🎮', descripcion: 'Setup, periféricos y accesorios gamer.' },
+  { slug: 'bebes', nombre: 'Bebés', emoji: '👶', descripcion: 'Todo lo esencial para los más chicos.' },
+  { slug: 'deportes', nombre: 'Deportes', emoji: '🏃', descripcion: 'Equipamiento para moverte mejor.' },
+  { slug: 'perfumes', nombre: 'Perfumes', emoji: '🧴', descripcion: 'Perfumes y fragancias originales al mejor precio.' },
+  {
+    slug: 'ofertas-del-dia',
+    nombre: 'Ofertas del día',
+    emoji: '🔥',
+    descripcion: 'Los descuentos más fuertes, elegidos hoy.',
+    virtual: 'ofertas',
+  },
+  {
+    slug: 'mas-vendidos',
+    nombre: 'Más vendidos',
+    emoji: '⭐',
+    descripcion: 'Los productos que la gente más está comprando.',
+    virtual: 'masVendidos',
+  },
+];
+
+export function getCategoryBySlug(slug: string): Category | undefined {
+  return CATEGORIES.find((c) => c.slug === slug);
+}
+
+export const NAV_CATEGORIES = CATEGORIES.filter((c) => !c.virtual);
+export const FEATURED_CATEGORIES = CATEGORIES.filter((c) => c.virtual);
