@@ -21,6 +21,7 @@ const SHEET_COLUMN_ORDER: (keyof ProductRaw)[] = [
   'EnvioGratis',
   'ItemId',
   'CatalogId',
+  'Etiqueta',
 ];
 
 // Catálogo editado a mano: se usa mientras no haya Google Sheet configurada.

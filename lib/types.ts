@@ -20,6 +20,7 @@ export interface ProductRaw {
   EnvioGratis?: string;
   ItemId?: string;
   CatalogId?: string;
+  Etiqueta?: string;
 }
 
 export interface Product {
@@ -43,6 +44,8 @@ export interface Product {
   itemId: string;
   /** ID de producto de catálogo ML (página /p/MLAnnn). Habilita el precio en vivo. */
   catalogId: string;
+  /** Etiqueta promocional libre (ej "Últimas unidades", "Oferta relámpago"). Badge rojo. */
+  etiqueta: string;
 }
 
 export interface Category {

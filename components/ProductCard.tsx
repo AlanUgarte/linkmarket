@@ -33,6 +33,7 @@ export default function ProductCard({ product, priority = false }: { product: Pr
 
         <div className="absolute top-2.5 left-2.5 right-12 flex flex-wrap gap-1.5">
           {product.descuento > 0 && <Badge variant="discount">-{product.descuento}%</Badge>}
+          {product.etiqueta && <Badge variant="promo">⚡ {product.etiqueta}</Badge>}
         </div>
 
         <div className="absolute top-2.5 right-2.5 flex flex-col gap-2">

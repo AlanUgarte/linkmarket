@@ -82,6 +82,7 @@ export function normalizeProduct(raw: ProductRaw, index: number): Product {
     envioGratis: parseBool(raw.EnvioGratis),
     itemId: (raw.ItemId || '').trim().toUpperCase(),
     catalogId: (raw.CatalogId || '').trim().toUpperCase(),
+    etiqueta: (raw.Etiqueta || '').trim(),
   };
 }
 
