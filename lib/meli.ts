@@ -63,6 +63,41 @@ async function fetchOffer(catalogId: string, token: string): Promise<MeliOffer |
  * Así el precio coincide siempre con el listado real, no con el ganador de un
  * catálogo (que suele ser otro vendedor).
  */
+/**
+ * Extrae precio/anterior/envío de la tarjeta destacada de una página de tienda
+ * de afiliado. Función pura (sin red) para poder testearla — ver demo() abajo.
+ * Las aria-label "Ahora:"/"Antes:" son inequívocas (locale es_AR): con
+ * descuento vienen ambas; sin descuento no hay ninguna y se toma el primer
+ * precio de la tarjeta (antes de las cuotas, que también tienen aria-label).
+ */
+export function parseFeaturedOffer(html: string): MeliOffer | null {
+  const idx = html.indexOf('rl-card-featured');
+  if (idx < 0) return null;
+  const seg = html.slice(idx, idx + 15000);
+
+  let price: number;
+  let original: number | null = null;
+  const ahora = seg.match(/aria-label="Ahora: (\d+) pesos/);
+  const antes = seg.match(/aria-label="Antes: (\d+) pesos/);
+  if (ahora) {
+    price = parseInt(ahora[1], 10);
+    original = antes ? parseInt(antes[1], 10) : null;
+  } else {
+    const antesCuotas = seg.split(/installments|cuotas/i)[0];
+    const simple = antesCuotas.match(/aria-label="(\d+) pesos/);
+    if (!simple) return null;
+    price = parseInt(simple[1], 10);
+  }
+  if (!Number.isFinite(price) || price <= 0) return null;
+  const free = /poly-shipping--(free|full|same_day)|Llega gratis|Env[íi]o gratis/i.test(seg);
+
+  return {
+    price,
+    original_price: original && original > price ? original : null,
+    shipping: { free_shipping: free },
+  };
+}
+
 async function fetchLinkOffer(link: string): Promise<MeliOffer | null> {
   try {
     const res = await fetch(link, {
@@ -74,27 +109,7 @@ async function fetchLinkOffer(link: string): Promise<MeliOffer | null> {
       next: { revalidate: REVALIDATE_SECONDS },
     });
     if (!res.ok) return null;
-    const html = await res.text();
-    const idx = html.indexOf('rl-card-featured');
-    if (idx < 0) return null;
-    const seg = html.slice(idx, idx + 15000);
-    const toNum = (s?: string) => (s ? parseInt(s.replace(/\./g, ''), 10) : NaN);
-
-    const prevM = seg.match(/andes-money-amount--previous[\s\S]{0,300}?money-amount__fraction[^>]*>([\d.]+)/);
-    const curM =
-      seg.match(/poly-price__current[\s\S]{0,400}?money-amount__fraction[^>]*>([\d.]+)/) ||
-      seg.match(/money-amount__fraction[^>]*>([\d.]+)/);
-
-    const price = toNum(curM?.[1]);
-    if (!Number.isFinite(price) || price <= 0) return null;
-    const original = toNum(prevM?.[1]);
-    const free = /poly-shipping--(free|full|same_day)|Llega gratis|Env[íi]o gratis/i.test(seg);
-
-    return {
-      price,
-      original_price: Number.isFinite(original) && original > price ? original : null,
-      shipping: { free_shipping: free },
-    };
+    return parseFeaturedOffer(await res.text());
   } catch {
     return null;
   }
