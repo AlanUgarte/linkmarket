@@ -1,5 +1,6 @@
 import { Product } from './types';
 import { computeDiscount } from './utils';
+import { REVALIDATE_SECONDS } from './constants';
 
 const TOKEN_URL = 'https://api.mercadolibre.com/oauth/token';
 const PRODUCTS_URL = 'https://api.mercadolibre.com/products';
@@ -56,37 +57,93 @@ async function fetchOffer(catalogId: string, token: string): Promise<MeliOffer |
 }
 
 /**
+ * Precio en vivo para productos SIN catálogo (perfumes, maquillaje, etc.),
+ * resolviendo el link de afiliado y leyendo la tarjeta destacada de la tienda
+ * — que es exactamente el producto que ve el comprador al abrir el link.
+ * Así el precio coincide siempre con el listado real, no con el ganador de un
+ * catálogo (que suele ser otro vendedor).
+ */
+async function fetchLinkOffer(link: string): Promise<MeliOffer | null> {
+  try {
+    const res = await fetch(link, {
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36',
+      },
+      redirect: 'follow',
+      next: { revalidate: REVALIDATE_SECONDS },
+    });
+    if (!res.ok) return null;
+    const html = await res.text();
+    const idx = html.indexOf('rl-card-featured');
+    if (idx < 0) return null;
+    const seg = html.slice(idx, idx + 15000);
+    const toNum = (s?: string) => (s ? parseInt(s.replace(/\./g, ''), 10) : NaN);
+
+    const prevM = seg.match(/andes-money-amount--previous[\s\S]{0,300}?money-amount__fraction[^>]*>([\d.]+)/);
+    const curM =
+      seg.match(/poly-price__current[\s\S]{0,400}?money-amount__fraction[^>]*>([\d.]+)/) ||
+      seg.match(/money-amount__fraction[^>]*>([\d.]+)/);
+
+    const price = toNum(curM?.[1]);
+    if (!Number.isFinite(price) || price <= 0) return null;
+    const original = toNum(prevM?.[1]);
+    const free = /poly-shipping--(free|full|same_day)|Llega gratis|Env[íi]o gratis/i.test(seg);
+
+    return {
+      price,
+      original_price: Number.isFinite(original) && original > price ? original : null,
+      shipping: { free_shipping: free },
+    };
+  } catch {
+    return null;
+  }
+}
+
+function applyOffer(p: Product, m: MeliOffer | null): Product {
+  if (!m || typeof m.price !== 'number') return p;
+  const precio = m.price;
+  const precioAnterior = m.original_price && m.original_price > precio ? m.original_price : null;
+  return {
+    ...p,
+    precio,
+    precioAnterior,
+    descuento: computeDiscount(precio, precioAnterior),
+    envioGratis: m.shipping?.free_shipping ?? p.envioGratis,
+  };
+}
+
+/**
  * Pisa precio, precio anterior, descuento y envío gratis con los datos EN VIVO
- * de Mercado Libre, para cada producto que tenga CatalogId en la planilla.
- * Si algo falla (sin credenciales, API caída, producto sin catálogo), el
- * producto conserva los valores de la planilla — nunca rompe el sitio.
+ * de Mercado Libre para TODOS los productos:
+ *  - con CatalogId → API oficial de catálogo (electrónica, electro, etc.).
+ *  - sin CatalogId pero con link → se resuelve el link y se lee su precio real
+ *    (perfumes, maquillaje: catálogos con muchos revendedores).
+ * Si algo falla, el producto conserva los valores de la planilla — nunca rompe.
  */
 export async function syncWithMeli(products: Product[]): Promise<Product[]> {
   try {
     const token = await getAppToken();
-    if (!token) return products;
 
-    const ids = [...new Set(products.map((p) => p.catalogId).filter(Boolean))];
-    if (ids.length === 0) return products;
-
-    const offers = new Map<string, MeliOffer | null>(
+    // Catálogo (requiere token): un fetch por CatalogId único.
+    const catIds = token ? [...new Set(products.map((p) => p.catalogId).filter(Boolean))] : [];
+    const catOffers = new Map<string, MeliOffer | null>(
       await Promise.all(
-        ids.map(async (cid): Promise<[string, MeliOffer | null]> => [cid, await fetchOffer(cid, token)])
+        catIds.map(async (cid): Promise<[string, MeliOffer | null]> => [cid, await fetchOffer(cid, token!)])
+      )
+    );
+
+    // Link (no requiere token): un fetch por link de los productos sin catálogo.
+    const linkProducts = products.filter((p) => !p.catalogId && /meli\.la\//.test(p.linkAfiliado));
+    const linkOffers = new Map<string, MeliOffer | null>(
+      await Promise.all(
+        linkProducts.map(async (p): Promise<[string, MeliOffer | null]> => [p.linkAfiliado, await fetchLinkOffer(p.linkAfiliado)])
       )
     );
 
     return products.map((p) => {
-      const m = p.catalogId ? offers.get(p.catalogId) : null;
-      if (!m || typeof m.price !== 'number') return p;
-      const precio = m.price;
-      const precioAnterior = m.original_price && m.original_price > precio ? m.original_price : null;
-      return {
-        ...p,
-        precio,
-        precioAnterior,
-        descuento: computeDiscount(precio, precioAnterior),
-        envioGratis: m.shipping?.free_shipping ?? p.envioGratis,
-      };
+      if (p.catalogId) return applyOffer(p, catOffers.get(p.catalogId) ?? null);
+      return applyOffer(p, linkOffers.get(p.linkAfiliado) ?? null);
     });
   } catch (error) {
     console.error('[meli] Error sincronizando con Mercado Libre:', error);

@@ -22,6 +22,7 @@ export const CATEGORIES: Category[] = [
   { slug: 'deportes', nombre: 'Deportes', emoji: '🏃', descripcion: 'Equipamiento para moverte mejor.' },
   { slug: 'perfumes-hombre', nombre: 'Perfumes Hombre', emoji: '🧔', descripcion: 'Fragancias masculinas originales al mejor precio.' },
   { slug: 'perfumes-mujer', nombre: 'Perfumes Mujer', emoji: '👩', descripcion: 'Fragancias femeninas originales al mejor precio.' },
+  { slug: 'maquillaje', nombre: 'Maquillaje', emoji: '💄', descripcion: 'Maquillaje y cosmética al mejor precio.' },
   {
     slug: 'ofertas-del-dia',
     nombre: 'Ofertas del día',
