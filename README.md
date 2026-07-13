@@ -27,7 +27,7 @@ No hay base de datos ni panel de admin propio: la planilla **es** el panel de ad
 
 **Detalle de cada columna:**
 
-- **Categoria**: debe ser una de: `Auto`, `Hogar`, `Tecnologia`, `Celulares`, `Computacion`, `Gadgets`, `Cocina`, `Mascotas`, `Herramientas`, `Gaming`, `Bebes`, `Deportes`, `Perfumes`. (Mayúsculas/tildes no importan, el sitio normaliza el texto).
+- **Categoria**: debe ser una de: `Auto`, `Hogar`, `Tecnologia`, `Celulares`, `Computacion`, `Gadgets`, `Cocina`, `Mascotas`, `Herramientas`, `Gaming`, `Bebes`, `Deportes`, `Perfumes Hombre`, `Perfumes Mujer`. (Mayúsculas/tildes no importan, el sitio normaliza el texto).
 - **Nombre**: nombre del producto.
 - **Descripcion**: descripción corta (1-2 líneas).
 - **Precio**: precio actual. Podés escribir `45000` o `$45.000`.

@@ -20,7 +20,8 @@ export const CATEGORIES: Category[] = [
   { slug: 'gaming', nombre: 'Gaming', emoji: '🎮', descripcion: 'Setup, periféricos y accesorios gamer.' },
   { slug: 'bebes', nombre: 'Bebés', emoji: '👶', descripcion: 'Todo lo esencial para los más chicos.' },
   { slug: 'deportes', nombre: 'Deportes', emoji: '🏃', descripcion: 'Equipamiento para moverte mejor.' },
-  { slug: 'perfumes', nombre: 'Perfumes', emoji: '🧴', descripcion: 'Perfumes y fragancias originales al mejor precio.' },
+  { slug: 'perfumes-hombre', nombre: 'Perfumes Hombre', emoji: '🧔', descripcion: 'Fragancias masculinas originales al mejor precio.' },
+  { slug: 'perfumes-mujer', nombre: 'Perfumes Mujer', emoji: '👩', descripcion: 'Fragancias femeninas originales al mejor precio.' },
   {
     slug: 'ofertas-del-dia',
     nombre: 'Ofertas del día',
