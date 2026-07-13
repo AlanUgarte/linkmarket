@@ -73,7 +73,12 @@ async function fetchOffer(catalogId: string, token: string): Promise<MeliOffer |
 export function parseFeaturedOffer(html: string): MeliOffer | null {
   const idx = html.indexOf('rl-card-featured');
   if (idx < 0) return null;
-  const seg = html.slice(idx, idx + 15000);
+  // Acotar a la PRIMERA tarjeta (el producto destacado). Si no, la ventana
+  // incluye las recomendaciones de abajo y se toma el precio de otro producto.
+  const after = html.slice(idx);
+  const firstCard = after.indexOf('poly-card');
+  const secondCard = firstCard >= 0 ? after.indexOf('poly-card', firstCard + 10) : -1;
+  const seg = secondCard > 0 ? after.slice(0, secondCard) : after.slice(0, 15000);
 
   let price: number;
   let original: number | null = null;
