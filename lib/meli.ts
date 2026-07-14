@@ -73,27 +73,32 @@ async function fetchOffer(catalogId: string, token: string): Promise<MeliOffer |
 export function parseFeaturedOffer(html: string): MeliOffer | null {
   const idx = html.indexOf('rl-card-featured');
   if (idx < 0) return null;
-  // Acotar a la PRIMERA tarjeta (el producto destacado). Si no, la ventana
-  // incluye las recomendaciones de abajo y se toma el precio de otro producto.
-  const after = html.slice(idx);
-  const firstCard = after.indexOf('poly-card');
-  const secondCard = firstCard >= 0 ? after.indexOf('poly-card', firstCard + 10) : -1;
-  const seg = secondCard > 0 ? after.slice(0, secondCard) : after.slice(0, 15000);
+  // Acotar a la PRIMERA tarjeta (el producto destacado): hasta el título del
+  // 2do producto. Cada card tiene un solo `poly-component__title` (a diferencia
+  // de "poly-card", que matchea sub-elementos). Así ningún precio de una
+  // recomendación de abajo se cuela como el del destacado.
+  const after = html.slice(idx, idx + 40000);
+  const t1 = after.indexOf('poly-component__title');
+  const t2 = t1 >= 0 ? after.indexOf('poly-component__title', t1 + 10) : -1;
+  const seg = t2 > 0 ? after.slice(0, t2) : after.slice(0, 20000);
 
+  // Precio actual: en `poly-price__current` si hay descuento; si no, el primer
+  // precio de la tarjeta, antes de las cuotas.
   let price: number;
-  let original: number | null = null;
-  const ahora = seg.match(/aria-label="Ahora: (\d+) pesos/);
-  const antes = seg.match(/aria-label="Antes: (\d+) pesos/);
-  if (ahora) {
-    price = parseInt(ahora[1], 10);
-    original = antes ? parseInt(antes[1], 10) : null;
+  const curM = seg.match(/poly-price__current[\s\S]{0,400}?aria-label="(?:Ahora: )?(\d+) pesos/);
+  if (curM) {
+    price = parseInt(curM[1], 10);
   } else {
-    const antesCuotas = seg.split(/installments|cuotas/i)[0];
-    const simple = antesCuotas.match(/aria-label="(\d+) pesos/);
+    const preCuotas = seg.split(/poly-price__installments|installments|cuotas/i)[0];
+    const simple = preCuotas.match(/aria-label="(\d+) pesos/);
     if (!simple) return null;
     price = parseInt(simple[1], 10);
   }
   if (!Number.isFinite(price) || price <= 0) return null;
+
+  // "Antes:" (tachado) dentro de la tarjeta destacada = precio anterior real.
+  const antesM = seg.match(/aria-label="Antes: (\d+) pesos/);
+  const original = antesM ? parseInt(antesM[1], 10) : null;
   const free = /poly-shipping--(free|full|same_day)|Llega gratis|Env[íi]o gratis/i.test(seg);
 
   return {

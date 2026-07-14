@@ -10,7 +10,8 @@ import { Category } from './types';
 export const CATEGORIES: Category[] = [
   { slug: 'auto', nombre: 'Auto', emoji: '🚗', descripcion: 'Accesorios, repuestos y tecnología para tu vehículo.' },
   { slug: 'hogar', nombre: 'Hogar', emoji: '🏠', descripcion: 'Todo para que tu casa funcione mejor.' },
-  { slug: 'tecnologia', nombre: 'Tecnología', emoji: '💡', descripcion: 'Lo último en tecnología, seleccionado a mano.' },
+  { slug: 'tecnologia', nombre: 'Tecnología', emoji: '💡', descripcion: 'Lo último en tecnología, seleccionado a mano.', grupo: 'Tecnología', grupoEmoji: '💡' },
+  { slug: 'televisores', nombre: 'Televisores', emoji: '📺', descripcion: 'Smart TVs y televisores al mejor precio.', grupo: 'Tecnología', grupoEmoji: '💡' },
   { slug: 'celulares', nombre: 'Celulares', emoji: '📱', descripcion: 'Celulares y accesorios al mejor precio.' },
   { slug: 'computacion', nombre: 'Computación', emoji: '💻', descripcion: 'PC armadas, componentes, monitores y periféricos.' },
   { slug: 'gadgets', nombre: 'Gadgets', emoji: '🔌', descripcion: 'Accesorios y gadgets que se hacen virales.' },
@@ -20,8 +21,8 @@ export const CATEGORIES: Category[] = [
   { slug: 'gaming', nombre: 'Gaming', emoji: '🎮', descripcion: 'Setup, periféricos y accesorios gamer.' },
   { slug: 'bebes', nombre: 'Bebés', emoji: '👶', descripcion: 'Todo lo esencial para los más chicos.' },
   { slug: 'deportes', nombre: 'Deportes', emoji: '🏃', descripcion: 'Equipamiento para moverte mejor.' },
-  { slug: 'perfumes-hombre', nombre: 'Perfumes Hombre', emoji: '🧔', descripcion: 'Fragancias masculinas originales al mejor precio.' },
-  { slug: 'perfumes-mujer', nombre: 'Perfumes Mujer', emoji: '👩', descripcion: 'Fragancias femeninas originales al mejor precio.' },
+  { slug: 'perfumes-hombre', nombre: 'Perfumes Hombre', emoji: '🧔', descripcion: 'Fragancias masculinas originales al mejor precio.', grupo: 'Perfumes', grupoEmoji: '🧴' },
+  { slug: 'perfumes-mujer', nombre: 'Perfumes Mujer', emoji: '👩', descripcion: 'Fragancias femeninas originales al mejor precio.', grupo: 'Perfumes', grupoEmoji: '🧴' },
   { slug: 'maquillaje', nombre: 'Maquillaje', emoji: '💄', descripcion: 'Maquillaje y cosmética al mejor precio.' },
   {
     slug: 'ofertas-del-dia',

@@ -55,6 +55,10 @@ export interface Category {
   descripcion: string;
   /** Si es true, la categoría no filtra por columna "Categoria" sino que aplica una regla especial */
   virtual?: 'ofertas' | 'masVendidos';
+  /** Si está, la categoría se agrupa en un desplegable con este nombre (ej "Perfumes", "Tecnología"). */
+  grupo?: string;
+  /** Emoji del desplegable del grupo. */
+  grupoEmoji?: string;
 }
 
 export type SortOption =

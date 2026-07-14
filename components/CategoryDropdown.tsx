@@ -5,14 +5,19 @@ import Link from 'next/link';
 import { Category } from '@/lib/types';
 
 /**
- * Desplegable de perfumes. El menú se renderiza con `position: fixed` para
- * escapar del recorte que impone el `overflow-x-auto` de la barra de
- * categorías (si no, quedaba tapado y no se podía elegir la subcategoría).
+ * Desplegable de una familia de categorías (ej "Perfumes" → Hombre/Mujer,
+ * "Tecnología" → Tecnología/Televisores). El menú se renderiza con
+ * `position: fixed` para escapar del recorte que impone el `overflow-x-auto`
+ * de la barra de categorías (si no, quedaba tapado y no se podía elegir).
  */
-export default function PerfumesMenu({
+export default function CategoryDropdown({
+  label,
+  emoji,
   items,
   chipClass,
 }: {
+  label: string;
+  emoji: string;
   items: Category[];
   chipClass: string;
 }) {
@@ -49,8 +54,8 @@ export default function PerfumesMenu({
         aria-expanded={open}
         className={chipClass}
       >
-        <span aria-hidden="true">🧴</span>
-        Perfumes
+        <span aria-hidden="true">{emoji}</span>
+        {label}
         <span aria-hidden="true" className={`text-xs transition-transform ${open ? 'rotate-180' : ''}`}>
           ▾
         </span>
