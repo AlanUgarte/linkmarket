@@ -13,6 +13,7 @@ export const CATEGORIES: Category[] = [
   { slug: 'tecnologia', nombre: 'Tecnología', emoji: '💡', descripcion: 'Lo último en tecnología, seleccionado a mano.', grupo: 'Tecnología', grupoEmoji: '💡' },
   { slug: 'televisores', nombre: 'Televisores', emoji: '📺', descripcion: 'Smart TVs y televisores al mejor precio.', grupo: 'Tecnología', grupoEmoji: '💡' },
   { slug: 'filmadoras-y-camaras-de-accion', nombre: 'Filmadoras y Cámaras de Acción', emoji: '📹', descripcion: 'Cámaras de acción, deportivas y filmadoras.', grupo: 'Tecnología', grupoEmoji: '💡' },
+  { slug: 'auriculares', nombre: 'Auriculares', emoji: '🎧', descripcion: 'Auriculares inalámbricos, in-ear y gamer.', grupo: 'Tecnología', grupoEmoji: '💡' },
   { slug: 'celulares', nombre: 'Celulares', emoji: '📱', descripcion: 'Celulares y accesorios al mejor precio.' },
   { slug: 'computacion', nombre: 'Computación', emoji: '💻', descripcion: 'PC armadas, componentes, monitores y periféricos.' },
   { slug: 'gadgets', nombre: 'Gadgets', emoji: '🔌', descripcion: 'Accesorios y gadgets que se hacen virales.' },
