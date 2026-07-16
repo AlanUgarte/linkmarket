@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Logo from './Logo';
 import CategoryDropdown from './CategoryDropdown';
+import HeaderSearch from './HeaderSearch';
 import { NAV_CATEGORIES, FEATURED_CATEGORIES } from '@/lib/categories';
 import { Category } from '@/lib/types';
 
@@ -17,8 +18,9 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-40 backdrop-blur-xl bg-base-950/80 border-b border-line">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="h-16 flex items-center justify-between gap-4">
+        <div className="h-16 flex items-center gap-4">
           <Logo />
+          <HeaderSearch />
         </div>
 
         <nav

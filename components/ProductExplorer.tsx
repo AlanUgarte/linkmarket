@@ -10,12 +10,15 @@ import EmptyState from './EmptyState';
 export default function ProductExplorer({
   products,
   initialSort = 'relevancia',
+  initialQuery = '',
 }: {
   products: Product[];
   initialSort?: SortOption;
+  initialQuery?: string;
 }) {
   const { query, setQuery, sort, setSort, products: filtered, resultCount } = useProducts(products, {
     initialSort,
+    initialQuery,
   });
 
   return (

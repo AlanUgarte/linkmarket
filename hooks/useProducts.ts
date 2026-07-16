@@ -35,10 +35,11 @@ function matchesQuery(product: Product, query: string): boolean {
 
 interface UseProductsOptions {
   initialSort?: SortOption;
+  initialQuery?: string;
 }
 
 export function useProducts(allProducts: Product[], options: UseProductsOptions = {}) {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState(options.initialQuery || '');
   const [sort, setSort] = useState<SortOption>(options.initialSort || 'relevancia');
   const debouncedQuery = useDebounce(query, 150);
 
