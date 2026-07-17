@@ -4,6 +4,8 @@ import ProductExplorer from '@/components/ProductExplorer';
 
 // Ver nota sobre este literal en app/page.tsx
 export const revalidate = 60;
+// Margen para la sincronizacion de precios con muchos productos (Vercel).
+export const maxDuration = 60;
 
 export const metadata: Metadata = {
   title: 'Buscar productos',

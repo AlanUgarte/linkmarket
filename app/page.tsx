@@ -10,6 +10,8 @@ import ProductGrid from '@/components/ProductGrid';
 // importarse de otro archivo). Si cambiás este valor, actualizalo también
 // en `lib/constants.ts`, `app/[category]/page.tsx` y `app/api/products/route.ts`.
 export const revalidate = 60;
+// Margen para la sincronizacion de precios con muchos productos (Vercel).
+export const maxDuration = 60;
 
 export default async function HomePage() {
   const products = await getProducts();
