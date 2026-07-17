@@ -5,7 +5,7 @@ export const SITE = {
     'Selección curada de productos en Mercado Libre Argentina: tecnología, hogar, gaming, mascotas y mucho más. Comprá seguro al mejor precio.',
   url: process.env.NEXT_PUBLIC_SITE_URL || 'https://tusitio.vercel.app',
   twitterHandle: process.env.NEXT_PUBLIC_TWITTER_HANDLE || '@tumarca',
-  themeColor: '#0A0A0B',
+  themeColor: '#FFE600',
 };
 
 /**

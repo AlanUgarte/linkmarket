@@ -6,7 +6,7 @@ import { NAV_CATEGORIES, FEATURED_CATEGORIES } from '@/lib/categories';
 import { Category } from '@/lib/types';
 
 const chipClass =
-  'shrink-0 inline-flex items-center gap-1.5 rounded-full border border-line bg-base-900 px-3.5 py-1.5 text-sm font-medium text-ink-dim transition-colors duration-200 ease-smooth hover:text-ink hover:border-line-strong hover:bg-base-800 active:scale-95';
+  'shrink-0 inline-flex items-center gap-1.5 rounded-full border border-line bg-base-900 px-3.5 py-1.5 text-sm font-medium text-ink transition-colors duration-200 ease-smooth hover:border-line-strong hover:bg-base-800 active:scale-95';
 
 export default function Header() {
   // Barra: destacadas (ofertas/más vendidos) + categorías. Las que tienen
@@ -16,16 +16,22 @@ export default function Header() {
   const gruposRenderizados = new Set<string>();
 
   return (
-    <header className="sticky top-0 z-40 backdrop-blur-xl bg-base-950/80 border-b border-line">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="h-16 flex items-center gap-4">
-          <Logo />
-          <HeaderSearch />
+    <header className="sticky top-0 z-40">
+      {/* Barra superior amarilla estilo Mercado Libre */}
+      <div className="bg-ml-yellow">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="h-14 flex items-center gap-3 sm:gap-5">
+            <Logo />
+            <HeaderSearch />
+          </div>
         </div>
+      </div>
 
+      {/* Barra de categorías blanca: todas visibles, sin scroll horizontal */}
+      <div className="bg-base-900 border-b border-line shadow-sm">
         <nav
           aria-label="Categorías"
-          className="flex gap-2 overflow-x-auto no-scrollbar pb-3 -mx-4 px-4 sm:mx-0 sm:px-0"
+          className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-wrap gap-2 py-2.5"
         >
           {items.map((c) => {
             if (!c.grupo) {

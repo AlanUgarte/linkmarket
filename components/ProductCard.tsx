@@ -63,11 +63,11 @@ export default function ProductCard({ product, priority = false }: { product: Pr
         <div className="flex items-baseline gap-2 flex-wrap">
           <span className="text-xl font-bold text-ink tracking-tight">{formatPrice(product.precio)}</span>
           {product.descuento > 0 && (
-            <span className="text-sm font-bold text-emerald-400">{product.descuento}% OFF</span>
+            <span className="text-sm font-bold text-ml-green">{product.descuento}% OFF</span>
           )}
         </div>
         {product.envioGratis && (
-          <span className="text-sm font-bold text-emerald-400">Envío gratis 🚚</span>
+          <span className="text-sm font-bold text-ml-green">Envío gratis 🚚</span>
         )}
 
         <a
@@ -76,7 +76,7 @@ export default function ProductCard({ product, priority = false }: { product: Pr
           rel="nofollow sponsored noopener"
           className="
             mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-ml-yellow
-            px-2 py-3 text-xs sm:text-sm font-bold text-base-950 text-center transition-all duration-200 ease-smooth
+            px-2 py-3 text-xs sm:text-sm font-bold text-ink text-center transition-all duration-200 ease-smooth
             hover:brightness-95 active:scale-[0.97]
           "
         >

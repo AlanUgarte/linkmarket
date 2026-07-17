@@ -7,24 +7,24 @@ export default function HeaderSearch() {
       action="/buscar"
       method="get"
       role="search"
-      className="relative flex-1 min-w-0 max-w-md"
+      className="relative flex-1 min-w-0 max-w-2xl"
     >
-      <button
-        type="submit"
-        aria-label="Buscar"
-        className="absolute left-0 top-0 flex h-full items-center px-3 text-ink-faint transition-colors hover:text-ink"
-      >
-        <Search size={16} aria-hidden="true" />
-      </button>
       <input
         type="text"
         name="q"
         inputMode="search"
         enterKeyHint="search"
-        placeholder="Buscar productos..."
+        placeholder="Buscar productos, marcas y más..."
         aria-label="Buscar productos"
-        className="w-full rounded-full border border-line bg-base-900 py-2 pl-9 pr-4 text-sm text-ink placeholder:text-ink-faint outline-none transition-colors focus:border-line-strong"
+        className="w-full rounded-sm bg-white py-2.5 pl-4 pr-11 text-sm text-ink placeholder:text-ink-faint shadow-sm outline-none"
       />
+      <button
+        type="submit"
+        aria-label="Buscar"
+        className="absolute right-0 top-0 flex h-full items-center border-l border-line px-3 text-ink-faint transition-colors hover:text-ink"
+      >
+        <Search size={18} aria-hidden="true" />
+      </button>
     </form>
   );
 }

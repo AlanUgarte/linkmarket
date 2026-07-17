@@ -8,7 +8,6 @@ import { Category } from './types';
  * a partir de otras columnas.
  */
 export const CATEGORIES: Category[] = [
-  { slug: 'auto', nombre: 'Auto', emoji: '🚗', descripcion: 'Accesorios, repuestos y tecnología para tu vehículo.', grupo: 'Auto y Moto', grupoEmoji: '🚗' },
   { slug: 'accesorios-para-tu-auto', nombre: 'Accesorios para tu Auto', emoji: '🚗', descripcion: 'Accesorios, cuidado y equipamiento para tu auto.', grupo: 'Auto y Moto', grupoEmoji: '🚗' },
   { slug: 'accesorios-para-tu-moto', nombre: 'Accesorios para tu Moto', emoji: '🏍️', descripcion: 'Cascos, accesorios y equipamiento para tu moto.', grupo: 'Auto y Moto', grupoEmoji: '🚗' },
   { slug: 'hogar', nombre: 'Hogar', emoji: '🏠', descripcion: 'Todo para que tu casa funcione mejor.', grupo: 'Hogar', grupoEmoji: '🏠' },
@@ -24,15 +23,11 @@ export const CATEGORIES: Category[] = [
   { slug: 'heladeras', nombre: 'Heladeras', emoji: '🧊', descripcion: 'Heladeras y freezers al mejor precio.', grupo: 'Electrodomésticos', grupoEmoji: '🧊' },
   { slug: 'lavarropas', nombre: 'Lavarropas', emoji: '🌀', descripcion: 'Lavarropas automáticos y secarropas.', grupo: 'Electrodomésticos', grupoEmoji: '🧊' },
   { slug: 'juguetes-y-juegos', nombre: 'Juguetes y Juegos', emoji: '🧸', descripcion: 'Juguetes, juegos de mesa y diversión.' },
-  { slug: 'tecnologia', nombre: 'Tecnología', emoji: '💡', descripcion: 'Lo último en tecnología, seleccionado a mano.', grupo: 'Tecnología', grupoEmoji: '💡' },
   { slug: 'televisores', nombre: 'Televisores', emoji: '📺', descripcion: 'Smart TVs y televisores al mejor precio.', grupo: 'Tecnología', grupoEmoji: '💡' },
   { slug: 'filmadoras-y-camaras-de-accion', nombre: 'Filmadoras y Cámaras de Acción', emoji: '📹', descripcion: 'Cámaras de acción, deportivas y filmadoras.', grupo: 'Tecnología', grupoEmoji: '💡' },
   { slug: 'auriculares', nombre: 'Auriculares', emoji: '🎧', descripcion: 'Auriculares inalámbricos, in-ear y gamer.', grupo: 'Tecnología', grupoEmoji: '💡' },
   { slug: 'celulares', nombre: 'Celulares', emoji: '📱', descripcion: 'Celulares y accesorios al mejor precio.' },
   { slug: 'computacion', nombre: 'Computación', emoji: '💻', descripcion: 'PC armadas, componentes, monitores y periféricos.' },
-  { slug: 'gadgets', nombre: 'Gadgets', emoji: '🔌', descripcion: 'Accesorios y gadgets que se hacen virales.' },
-  { slug: 'cocina', nombre: 'Cocina', emoji: '🍳', descripcion: 'Herramientas de cocina que sí valen la pena.' },
-  { slug: 'mascotas', nombre: 'Mascotas', emoji: '🐶', descripcion: 'Todo para consentir a tu mejor amigo.', grupo: 'Mascotas', grupoEmoji: '🐶' },
   { slug: 'alimento-para-mascotas', nombre: 'Alimento para Mascotas', emoji: '🦴', descripcion: 'Alimento balanceado para perros y gatos.', grupo: 'Mascotas', grupoEmoji: '🐶' },
   { slug: 'accesorios-para-mascotas', nombre: 'Accesorios para Mascotas', emoji: '🐾', descripcion: 'Camas, juguetes, correas y más para tu mascota.', grupo: 'Mascotas', grupoEmoji: '🐶' },
   { slug: 'herramientas', nombre: 'Herramientas', emoji: '🛠', descripcion: 'Herramientas profesionales al mejor precio.', grupo: 'Herramientas', grupoEmoji: '🛠' },
@@ -40,8 +35,7 @@ export const CATEGORIES: Category[] = [
   { slug: 'set-herramientas', nombre: 'Set Herramientas', emoji: '🧰', descripcion: 'Sets, maletines y kits completos de herramientas.', grupo: 'Herramientas', grupoEmoji: '🛠' },
   { slug: 'herramientas-para-jardin', nombre: 'Herramientas para Jardín', emoji: '🌱', descripcion: 'Todo para el jardín: corte, poda y riego.', grupo: 'Herramientas', grupoEmoji: '🛠' },
   { slug: 'gaming', nombre: 'Gaming', emoji: '🎮', descripcion: 'Setup, periféricos y accesorios gamer.' },
-  { slug: 'bebes', nombre: 'Bebés', emoji: '👶', descripcion: 'Todo lo esencial para los más chicos.', grupo: 'Bebés', grupoEmoji: '👶' },
-  { slug: 'coches', nombre: 'Coches', emoji: '🍼', descripcion: 'Cochecitos y sillas para bebés.', grupo: 'Bebés', grupoEmoji: '👶' },
+  { slug: 'coches', nombre: 'Coches de Bebé', emoji: '👶', descripcion: 'Cochecitos y sillas para bebés.' },
   { slug: 'deportes', nombre: 'Deportes', emoji: '🏃', descripcion: 'Equipamiento para moverte mejor.', grupo: 'Deportes y Fitness', grupoEmoji: '🏃' },
   { slug: 'bicicletas', nombre: 'Bicicletas', emoji: '🚴', descripcion: 'Bicicletas urbanas, MTB y rodados para todos.', grupo: 'Deportes y Fitness', grupoEmoji: '🏃' },
   { slug: 'fitness', nombre: 'Fitness', emoji: '💪', descripcion: 'Pesas, bandas y equipamiento para entrenar.', grupo: 'Deportes y Fitness', grupoEmoji: '🏃' },

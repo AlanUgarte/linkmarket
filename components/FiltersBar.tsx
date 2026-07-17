@@ -26,7 +26,7 @@ export default function FiltersBar({
         aria-label="Ordenar productos"
         className="
           appearance-none rounded-xl border border-line bg-base-900 py-3 pl-4 pr-9 text-sm text-ink
-          transition-colors duration-200 ease-smooth focus:border-ml-yellow/50 focus:outline-none
+          transition-colors duration-200 ease-smooth focus:border-ml-blue focus:outline-none
           cursor-pointer hover:border-line-strong
         "
       >
