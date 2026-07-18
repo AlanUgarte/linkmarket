@@ -56,7 +56,7 @@ export default function CategoryDropdown({
       >
         <span aria-hidden="true">{emoji}</span>
         {label}
-        <span aria-hidden="true" className={`text-xs transition-transform ${open ? 'rotate-180' : ''}`}>
+        <span aria-hidden="true" className={`ml-auto sm:ml-0 text-xs transition-transform ${open ? 'rotate-180' : ''}`}>
           ▾
         </span>
       </button>

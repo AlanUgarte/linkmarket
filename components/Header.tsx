@@ -6,7 +6,7 @@ import { NAV_CATEGORIES, FEATURED_CATEGORIES } from '@/lib/categories';
 import { Category } from '@/lib/types';
 
 const chipClass =
-  'shrink-0 inline-flex items-center gap-1.5 rounded-full border border-line bg-base-900 px-3.5 py-1.5 text-sm font-medium text-ink transition-colors duration-200 ease-smooth hover:border-line-strong hover:bg-base-800 active:scale-95';
+  'w-full sm:w-auto shrink-0 inline-flex items-center gap-1.5 rounded-full border border-line bg-base-900 px-3.5 py-2 text-[13px] sm:text-sm font-medium text-ink whitespace-nowrap transition-colors duration-200 ease-smooth hover:border-line-strong hover:bg-base-800 active:scale-95';
 
 export default function Header() {
   // Barra: destacadas (ofertas/más vendidos) + categorías. Las que tienen
@@ -31,7 +31,7 @@ export default function Header() {
       <div className="bg-base-900 border-b border-line shadow-sm">
         <nav
           aria-label="Categorías"
-          className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-wrap gap-2 py-2.5"
+          className="max-w-6xl mx-auto px-4 sm:px-6 grid grid-cols-2 sm:flex sm:flex-wrap gap-2 py-3"
         >
           {items.map((c) => {
             if (!c.grupo) {
