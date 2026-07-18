@@ -7,7 +7,7 @@ import FavoriteButton from './FavoriteButton';
 import ShareButton from './ShareButton';
 
 export default function ProductCard({ product, priority = false }: { product: Product; priority?: boolean }) {
-  const href = ensureAffiliateLink(product.linkAfiliado);
+  const href = ensureAffiliateLink(product.linkProducto || product.linkAfiliado);
 
   return (
     <article

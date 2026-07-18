@@ -2,6 +2,17 @@ import { Product, ProductRaw } from './types';
 import { normalizeProduct } from './utils';
 import { syncWithMeli } from './meli';
 import { REVALIDATE_SECONDS, SHEET_GID } from './constants';
+import linkMap from './linkMap.json';
+
+// Los `meli.la` abren el PERFIL en la web (forceInApp de ML), no el producto.
+// Este mapa (armado offline) traduce cada `meli.la` a su link directo de
+// producto con el mismo matt_tool de afiliado. La planilla no se toca.
+const LINK_MAP = linkMap as Record<string, string>;
+
+function withProductLink(p: Product): Product {
+  const resolved = LINK_MAP[p.linkAfiliado];
+  return resolved ? { ...p, linkProducto: resolved } : p;
+}
 
 // El orden real de columnas en la hoja de cálculo (deben coincidir con el README).
 const SHEET_COLUMN_ORDER: (keyof ProductRaw)[] = [
@@ -140,7 +151,10 @@ export async function getProducts(): Promise<Product[]> {
     }
   }
   // Precios/envío en vivo desde Mercado Libre (si hay credenciales e ItemIds).
-  return syncWithMeli(products);
+  const synced = await syncWithMeli(products);
+  // Resolver el link del botón al producto (sin tocar linkAfiliado, que la
+  // sync de precios necesita como `meli.la`).
+  return synced.map(withProductLink);
 }
 
 export const SHEETS_REVALIDATE = REVALIDATE_SECONDS;
