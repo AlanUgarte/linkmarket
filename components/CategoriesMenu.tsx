@@ -2,17 +2,19 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { Menu, ChevronDown, X } from 'lucide-react';
+import { Menu, ChevronDown, ChevronRight, X } from 'lucide-react';
 import { NAV_CATEGORIES, FEATURED_CATEGORIES } from '@/lib/categories';
 import { Category } from '@/lib/types';
 
 /**
- * Menú de categorías estilo Mercado Libre: un botón "Categorías" que abre un
- * panel con todos los grupos y sus subcategorías (columnas responsivas).
- * Al lado del botón quedan los accesos rápidos (Ofertas / Más vendidos).
+ * Menú de categorías estilo Mercado Libre: dos paneles.
+ * Izquierda: lista de rubros (grupos) + categorías sueltas.
+ * Derecha (desktop): al pasar el mouse / clickear un rubro, se muestran SOLO
+ * sus subcategorías. En mobile el rubro se despliega como acordeón debajo.
  */
 export default function CategoriesMenu() {
   const [open, setOpen] = useState(false);
+  const [active, setActive] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -23,8 +25,7 @@ export default function CategoriesMenu() {
     const onEsc = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setOpen(false);
     };
-    // El listener se activa un tick después para que el mismo click que abre
-    // el menú no lo cierre de inmediato (se estaba abriendo y cerrando solo).
+    // Un tick después para que el mismo click que abre no lo cierre.
     const id = window.setTimeout(() => document.addEventListener('click', onDoc), 0);
     document.addEventListener('keydown', onEsc);
     return () => {
@@ -34,7 +35,7 @@ export default function CategoriesMenu() {
     };
   }, [open]);
 
-  // Grupos en orden de aparición + categorías sueltas.
+  // Rubros (grupos) en orden + categorías sueltas.
   const groups: { name: string; emoji: string; items: Category[] }[] = [];
   const standalone: Category[] = [];
   const seen = new Set<string>();
@@ -51,6 +52,7 @@ export default function CategoriesMenu() {
       items: NAV_CATEGORIES.filter((x) => x.grupo === c.grupo),
     });
   }
+  const activeGroup = groups[active] ?? groups[0];
 
   const chip =
     'inline-flex items-center gap-1.5 rounded-full border border-line bg-base-900 px-3.5 py-2 text-[13px] sm:text-sm font-medium text-ink whitespace-nowrap transition-colors hover:bg-base-800 hover:border-line-strong active:scale-95';
@@ -87,48 +89,87 @@ export default function CategoriesMenu() {
 
       {open && (
         <div className="absolute inset-x-0 top-full z-50 border-b border-line bg-base-900 shadow-soft animate-fadeIn">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5 max-h-[72vh] overflow-y-auto grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-5">
-            {groups.map((g) => (
-              <div key={g.name} className="min-w-0">
-                <p className="flex items-center gap-1.5 text-sm font-bold text-ink mb-2">
-                  <span aria-hidden="true">{g.emoji}</span>
-                  {g.name}
-                </p>
-                <ul className="flex flex-col">
-                  {g.items.map((it) => (
-                    <li key={it.slug}>
-                      <Link
-                        href={`/${it.slug}`}
-                        onClick={() => setOpen(false)}
-                        className="block rounded px-1.5 py-1.5 text-[13px] text-ink-dim transition-colors hover:text-ml-blue hover:bg-base-800"
-                      >
-                        {it.nombre}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:flex sm:gap-6 sm:min-h-[400px] max-h-[75vh] overflow-y-auto">
+            {/* Izquierda: rubros + sueltas */}
+            <ul className="sm:w-64 sm:shrink-0 sm:border-r sm:border-line sm:pr-3 flex flex-col">
+              {groups.map((g, i) => (
+                <li key={g.name}>
+                  <button
+                    type="button"
+                    onMouseEnter={() => setActive(i)}
+                    onClick={() => setActive(i)}
+                    aria-expanded={active === i}
+                    className={`w-full flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-left transition-colors ${
+                      active === i ? 'bg-base-800 text-ink' : 'text-ink-dim hover:bg-base-800 hover:text-ink'
+                    }`}
+                  >
+                    <span aria-hidden="true">{g.emoji}</span>
+                    <span className="flex-1">{g.name}</span>
+                    <ChevronRight
+                      size={15}
+                      aria-hidden="true"
+                      className={`shrink-0 transition-transform sm:rotate-0 ${active === i ? 'rotate-90 text-ink' : 'text-ink-faint'}`}
+                    />
+                  </button>
 
-            {standalone.length > 0 && (
-              <div className="min-w-0">
-                <p className="text-sm font-bold text-ink mb-2">Más categorías</p>
-                <ul className="flex flex-col">
+                  {/* Acordeón mobile: subcategorías del rubro activo */}
+                  {active === i && (
+                    <ul className="sm:hidden flex flex-col pl-9 pb-2">
+                      {g.items.map((it) => (
+                        <li key={it.slug}>
+                          <Link
+                            href={`/${it.slug}`}
+                            onClick={() => setOpen(false)}
+                            className="block py-1.5 text-[13px] text-ink-dim transition-colors hover:text-ml-blue"
+                          >
+                            {it.nombre}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </li>
+              ))}
+
+              {/* Categorías sueltas: links directos */}
+              {standalone.length > 0 && (
+                <li className="mt-1 pt-1 border-t border-line flex flex-col">
                   {standalone.map((it) => (
-                    <li key={it.slug}>
-                      <Link
-                        href={`/${it.slug}`}
-                        onClick={() => setOpen(false)}
-                        className="flex items-center gap-1.5 rounded px-1.5 py-1.5 text-[13px] text-ink-dim transition-colors hover:text-ml-blue hover:bg-base-800"
-                      >
-                        <span aria-hidden="true">{it.emoji}</span>
-                        {it.nombre}
-                      </Link>
-                    </li>
+                    <Link
+                      key={it.slug}
+                      href={`/${it.slug}`}
+                      onClick={() => setOpen(false)}
+                      className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-ink-dim transition-colors hover:bg-base-800 hover:text-ink"
+                    >
+                      <span aria-hidden="true">{it.emoji}</span>
+                      {it.nombre}
+                    </Link>
                   ))}
-                </ul>
-              </div>
-            )}
+                </li>
+              )}
+            </ul>
+
+            {/* Derecha (desktop): subcategorías del rubro activo */}
+            <div className="hidden sm:block flex-1 pt-1">
+              <p className="flex items-center gap-2 text-base font-bold text-ink mb-3">
+                <span aria-hidden="true">{activeGroup.emoji}</span>
+                {activeGroup.name}
+              </p>
+              <ul className="grid grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-0.5">
+                {activeGroup.items.map((it) => (
+                  <li key={it.slug}>
+                    <Link
+                      href={`/${it.slug}`}
+                      onClick={() => setOpen(false)}
+                      className="flex items-center gap-1.5 rounded px-2 py-1.5 text-sm text-ink-dim transition-colors hover:text-ml-blue hover:bg-base-800"
+                    >
+                      <span aria-hidden="true">{it.emoji}</span>
+                      {it.nombre}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
       )}
