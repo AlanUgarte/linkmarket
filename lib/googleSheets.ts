@@ -9,9 +9,21 @@ import linkMap from './linkMap.json';
 // producto con el mismo matt_tool de afiliado. La planilla no se toca.
 const LINK_MAP = linkMap as Record<string, string>;
 
-function withProductLink(p: Product): Product {
+/**
+ * Resuelve el link del botón al producto y, si es una página de catálogo
+ * (`/p/MLA...`), deriva el CatalogId. Así la sincronización de precios usa la
+ * API de catálogo (precio del ganador del buy-box = el que ve el comprador),
+ * en vez de la tarjeta destacada del afiliado, que suele traer un precio viejo.
+ */
+function withResolvedLink(p: Product): Product {
   const resolved = LINK_MAP[p.linkAfiliado];
-  return resolved ? { ...p, linkProducto: resolved } : p;
+  if (!resolved) return p;
+  const catMatch = resolved.match(/\/p\/(MLA\d+)/);
+  return {
+    ...p,
+    linkProducto: resolved,
+    catalogId: p.catalogId || (catMatch ? catMatch[1] : p.catalogId),
+  };
 }
 
 // El orden real de columnas en la hoja de cálculo (deben coincidir con el README).
@@ -150,11 +162,12 @@ export async function getProducts(): Promise<Product[]> {
       return [];
     }
   }
-  // Precios/envío en vivo desde Mercado Libre (si hay credenciales e ItemIds).
-  const synced = await syncWithMeli(products);
-  // Resolver el link del botón al producto (sin tocar linkAfiliado, que la
-  // sync de precios necesita como `meli.la`).
-  return synced.map(withProductLink);
+  // Resolver el link del botón al producto y derivar CatalogId ANTES de la
+  // sync, para que el precio salga de la API de catálogo (no de la tarjeta
+  // del afiliado). No se toca `linkAfiliado`.
+  const resolved = products.map(withResolvedLink);
+  // Precios/envío en vivo desde Mercado Libre.
+  return syncWithMeli(resolved);
 }
 
 export const SHEETS_REVALIDATE = REVALIDATE_SECONDS;

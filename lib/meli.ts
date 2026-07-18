@@ -180,8 +180,8 @@ export async function syncWithMeli(products: Product[]): Promise<Product[]> {
     // Catálogo (requiere token): un fetch por CatalogId único.
     const catIds = token ? [...new Set(products.map((p) => p.catalogId).filter(Boolean))] : [];
     const catOffers = await resolveWithBudget(catIds, (cid) => fetchOffer(cid, token!), {
-      concurrency: 10,
-      budgetMs: 6000,
+      concurrency: 12,
+      budgetMs: 9000,
     });
 
     // Link (no requiere token): un fetch por link de los productos sin catálogo.
