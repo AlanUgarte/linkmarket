@@ -23,9 +23,12 @@ export default function CategoriesMenu() {
     const onEsc = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setOpen(false);
     };
-    document.addEventListener('click', onDoc);
+    // El listener se activa un tick después para que el mismo click que abre
+    // el menú no lo cierre de inmediato (se estaba abriendo y cerrando solo).
+    const id = window.setTimeout(() => document.addEventListener('click', onDoc), 0);
     document.addEventListener('keydown', onEsc);
     return () => {
+      window.clearTimeout(id);
       document.removeEventListener('click', onDoc);
       document.removeEventListener('keydown', onEsc);
     };
@@ -57,7 +60,10 @@ export default function CategoriesMenu() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-wrap items-center gap-2 py-2">
         <button
           type="button"
-          onClick={() => setOpen((o) => !o)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setOpen((o) => !o);
+          }}
           aria-expanded={open}
           aria-label="Ver todas las categorías"
           className="inline-flex items-center gap-2 rounded-full border border-line-strong bg-base-800 px-4 py-2 text-sm font-semibold text-ink whitespace-nowrap transition-colors hover:bg-base-700 active:scale-95"
