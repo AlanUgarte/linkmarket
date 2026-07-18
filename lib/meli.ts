@@ -45,10 +45,17 @@ interface MeliOffer {
  * catálogo es el único camino autorizado, y además es el correcto.)
  */
 async function fetchOffer(catalogId: string, token: string): Promise<MeliOffer | null> {
-  const res = await fetch(`${PRODUCTS_URL}/${catalogId}/items`, {
-    headers: { Authorization: `Bearer ${token}` },
-    next: { revalidate: 60 },
-  });
+  const auth = { headers: { Authorization: `Bearer ${token}` }, next: { revalidate: 60 } };
+  // 1) Ganador del buy-box = EXACTAMENTE el precio que muestra la página del
+  // producto al comprador (no siempre es el item más barato del catálogo).
+  const prod = await fetch(`${PRODUCTS_URL}/${catalogId}`, auth);
+  if (prod.ok) {
+    const d = await prod.json();
+    const w = d?.buy_box_winner;
+    if (w && typeof w.price === 'number') return w;
+  }
+  // 2) Fallback: primer item del catálogo.
+  const res = await fetch(`${PRODUCTS_URL}/${catalogId}/items`, auth);
   if (!res.ok) return null;
   const data = await res.json();
   const winner = data?.results?.[0];
