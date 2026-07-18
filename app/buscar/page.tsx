@@ -12,13 +12,10 @@ export const metadata: Metadata = {
   robots: { index: false, follow: true },
 };
 
-export default async function BuscarPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ q?: string }>;
-}) {
-  const { q } = await searchParams;
-  const query = (q || '').trim();
+// IMPORTANTE: esta página es ESTÁTICA (ISR, cacheada). NO lee `searchParams`
+// en el server —hacerlo la volvía dinámica y re-corría la sync de precios en
+// cada búsqueda (~13s). El término `?q=` lo lee el cliente y filtra al instante.
+export default async function BuscarPage() {
   const products = await getProducts();
 
   return (
@@ -31,7 +28,7 @@ export default async function BuscarPage({
         <p className="text-ink-faint text-sm">Encontrá lo que buscás en todo el catálogo.</p>
       </header>
 
-      <ProductExplorer products={products} initialQuery={query} />
+      <ProductExplorer products={products} readQueryFromUrl />
     </div>
   );
 }
