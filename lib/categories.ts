@@ -53,7 +53,12 @@ export const CATEGORIES: Category[] = [
   { slug: 'termos-y-vasos', nombre: 'Termos y Vasos', emoji: '🧉', descripcion: 'Termos, vasos térmicos y botellas.', grupo: 'Deportes y Fitness', grupoEmoji: '🏃' },
   { slug: 'perfumes-hombre', nombre: 'Perfumes Hombre', emoji: '🧔', descripcion: 'Fragancias masculinas originales al mejor precio.', grupo: 'Perfumes', grupoEmoji: '🧴' },
   { slug: 'perfumes-mujer', nombre: 'Perfumes Mujer', emoji: '👩', descripcion: 'Fragancias femeninas originales al mejor precio.', grupo: 'Perfumes', grupoEmoji: '🧴' },
-  { slug: 'maquillaje', nombre: 'Maquillaje', emoji: '💄', descripcion: 'Maquillaje y cosmética al mejor precio.' },
+  { slug: 'maquillaje', nombre: 'Maquillaje', emoji: '💄', descripcion: 'Maquillaje y cosmética al mejor precio.', grupo: 'Belleza y Cuidado Personal', grupoEmoji: '💄' },
+  { slug: 'cuidado-de-la-piel', nombre: 'Cuidado de la Piel', emoji: '🧴', descripcion: 'Cremas, serums y cuidado facial y corporal.', grupo: 'Belleza y Cuidado Personal', grupoEmoji: '💄' },
+  { slug: 'electrobeauty', nombre: 'Electrobeauty', emoji: '💇‍♀️', descripcion: 'Planchitas, secadores y aparatología de belleza.', grupo: 'Belleza y Cuidado Personal', grupoEmoji: '💄' },
+  { slug: 'cuidado-del-cabello', nombre: 'Cuidado del Cabello', emoji: '💆‍♀️', descripcion: 'Shampoo, tratamientos y cuidado capilar.', grupo: 'Belleza y Cuidado Personal', grupoEmoji: '💄' },
+  { slug: 'dermocosmetica', nombre: 'Dermocosmética', emoji: '🧪', descripcion: 'Dermocosmética y cuidado especializado de la piel.', grupo: 'Belleza y Cuidado Personal', grupoEmoji: '💄' },
+  { slug: 'belleza-profesional', nombre: 'Belleza Profesional', emoji: '💅', descripcion: 'Productos y equipamiento de belleza profesional.', grupo: 'Belleza y Cuidado Personal', grupoEmoji: '💄' },
   {
     slug: 'ofertas-del-dia',
     nombre: 'Ofertas del día',
