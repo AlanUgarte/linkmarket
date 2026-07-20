@@ -218,6 +218,17 @@ Todos los eventos de producto incluyen `content_ids` (el `ItemId` de ML si está
 
 Verificalo con la extensión **Meta Pixel Helper** de Chrome entrando al sitio publicado.
 
+### Conversions API (envío server-side, opcional pero recomendado)
+
+Además del pixel del navegador, cada evento se **espeja desde el servidor** vía la ruta `app/api/track/route.ts` hacia la Conversions API de Meta. Esto recupera los eventos que el pixel pierde por **ad-blockers, iOS/Safari (ITP) y extensiones de privacidad** (suele ser 30–50% del total). Los dos canales comparten un `event_id`, así Meta **deduplica** y no cuenta doble.
+
+Para activarlo seteá en Vercel (o `.env.local`):
+
+- `META_CAPI_ACCESS_TOKEN` — token de la CAPI: **Events Manager → tu pixel → Configuración → Conversions API → Generar token de acceso**. Es secreto (no lleva `NEXT_PUBLIC_`).
+- `META_CAPI_TEST_EVENT_CODE` *(solo para probar)* — de **Events Manager → Probar eventos**. Con esto ves los eventos server-side en vivo. Vaciá esta variable en producción.
+
+Si dejás el token vacío, la CAPI queda apagada y el sitio sigue funcionando solo con el pixel del navegador (no rompe nada). Como no hay login, el matching server-side usa IP, user-agent y las cookies `_fbp`/`_fbc` (incluye el `fbclid` del clic del anuncio) — no se envían datos personales.
+
 ---
 
 ## 13. Preparado para el futuro
