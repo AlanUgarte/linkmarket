@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Product, SortOption } from '@/lib/types';
 import { useDebounce } from './useDebounce';
-import { trackSearch } from '@/lib/pixel';
+import { trackSearch, trackFilter } from '@/lib/pixel';
 
 function sortProducts(products: Product[], sort: SortOption): Product[] {
   const list = [...products];
@@ -48,10 +48,20 @@ export function useProducts(allProducts: Product[], options: UseProductsOptions 
     return sortProducts(byQuery, sort);
   }, [allProducts, debouncedQuery, sort]);
 
-  // Meta Pixel: un evento Search por término (ya viene debounced, no spamea).
+  // Analítica: un evento Search por término (ya viene debounced, no spamea).
   useEffect(() => {
     if (debouncedQuery.trim()) trackSearch(debouncedQuery);
   }, [debouncedQuery]);
+
+  // Analítica: evento Filtro al cambiar el orden (salteamos el valor inicial).
+  const firstSort = useRef(true);
+  useEffect(() => {
+    if (firstSort.current) {
+      firstSort.current = false;
+      return;
+    }
+    trackFilter(sort);
+  }, [sort]);
 
   return {
     query,

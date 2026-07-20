@@ -231,6 +231,31 @@ Si dejás el token vacío, la CAPI queda apagada y el sitio sigue funcionando so
 
 ---
 
+## 12c. Analítica propia en Google Sheets (tu base de datos)
+
+Además de Meta, **cada evento se guarda en tu propia Google Sheet**, para que puedas analizar todo **sin entrar a Meta Ads**. Cada evento viaja simultáneamente a tres destinos con el mismo `event_id`:
+
+```
+Evento → Meta Pixel  +  Meta Conversions API  +  Google Sheets (Apps Script)
+```
+
+**Qué se registra** (pestaña `Eventos`, una fila por evento): `PageView`, `ViewContent`, `Scroll25/50/75/100`, `Tiempo30/60/120`, `ClickCategoria`, `Busqueda`, `Filtro`, `ClickMercadoLibre`, `Favorito`, `Error` — cada uno con producto, categoría, precio, URL destino, UTMs, `fbclid`/`gclid`, referrer, dispositivo, SO, navegador, resolución, idioma, país/ciudad, IP anonimizada, tiempo en página, scroll % y usuario/sesión anónimos.
+
+**El Apps Script arma solo** (y refresca cada 5 min):
+- Pestañas **Eventos, Productos, Campañas, Dashboard, Configuración**.
+- **Dashboard** con KPIs (usuarios hoy/7/30 días, PageViews, clicks, CTR, tiempo y scroll promedio, top categorías/campañas/fuentes…) y **10 gráficos** (clicks por día, top productos, categorías, fuentes, dispositivos, eventos por hora, campañas, usuarios por día, scroll por producto y el **embudo** PageView → ViewContent → Click).
+
+**Cómo activarlo**: seguí `apps-script/README.md` (pegás `Code.gs` en tu planilla, corrés `setup()`, publicás la Web App y cargás en Vercel `APPS_SCRIPT_WEBHOOK_URL` + `APPS_SCRIPT_WEBHOOK_TOKEN`). Si no lo configurás, el sitio funciona igual: la analítica a Sheets simplemente queda apagada.
+
+**Piezas de código** (todo additivo, no toca el flujo actual):
+- `lib/analytics.ts` — motor: identidad anónima, contexto (UTM/device/sesión), y despacho a los 3 destinos.
+- `lib/pixel.ts` — API de tracking que usan los componentes (wrappers finos).
+- `components/AnalyticsTracker.tsx` — PageView, scroll, tiempo y errores globales.
+- `app/api/track/route.ts` — reparte server-side a CAPI + Google Sheets (enriquece con geo/IP).
+- `apps-script/Code.gs` — webhook + dashboard.
+
+---
+
 ## 13. Preparado para el futuro
 
 La arquitectura ya deja lugar para, sin romper nada de lo existente:

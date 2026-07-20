@@ -6,7 +6,7 @@ import { SITE } from '@/lib/constants';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import MetaPixel from '@/components/MetaPixel';
-import PageViewTracker from '@/components/PageViewTracker';
+import AnalyticsTracker from '@/components/AnalyticsTracker';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -105,7 +105,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-screen flex flex-col font-sans">
         <MetaPixel />
         <Suspense fallback={null}>
-          <PageViewTracker />
+          <AnalyticsTracker />
         </Suspense>
         <script
           type="application/ld+json"

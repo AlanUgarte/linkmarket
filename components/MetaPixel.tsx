@@ -4,7 +4,7 @@ import { META_PIXEL_ID } from '@/lib/constants';
 /**
  * Meta Pixel (Facebook/Instagram Ads). Se carga una sola vez a nivel global
  * desde el layout raíz. Dispara el evento PageView inicial; como el sitio es
- * una SPA con App Router, ver PageViewTracker para los cambios de ruta.
+ * una SPA con App Router, ver AnalyticsTracker para los cambios de ruta.
  * Si META_PIXEL_ID está vacío, no renderiza nada.
  */
 export default function MetaPixel() {
@@ -12,6 +12,11 @@ export default function MetaPixel() {
 
   return (
     <>
+      {/*
+        Solo inicializa el pixel. El primer PageView (y los de cada navegación)
+        los dispara AnalyticsTracker con un event_id compartido, para deduplicar
+        con la Conversions API y evitar doble conteo.
+      */}
       <Script id="meta-pixel" strategy="afterInteractive">
         {`!function(f,b,e,v,n,t,s)
 {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -21,8 +26,7 @@ n.queue=[];t=b.createElement(e);t.async=!0;
 t.src=v;s=b.getElementsByTagName(e)[0];
 s.parentNode.insertBefore(t,s)}(window, document,'script',
 'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', '${META_PIXEL_ID}');
-fbq('track', 'PageView');`}
+fbq('init', '${META_PIXEL_ID}');`}
       </Script>
       <noscript>
         {/* eslint-disable-next-line @next/next/no-img-element */}
