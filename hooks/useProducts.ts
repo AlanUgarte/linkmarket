@@ -1,8 +1,9 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Product, SortOption } from '@/lib/types';
 import { useDebounce } from './useDebounce';
+import { trackSearch } from '@/lib/pixel';
 
 function sortProducts(products: Product[], sort: SortOption): Product[] {
   const list = [...products];
@@ -46,6 +47,11 @@ export function useProducts(allProducts: Product[], options: UseProductsOptions 
     const byQuery = allProducts.filter((p) => matchesQuery(p, debouncedQuery));
     return sortProducts(byQuery, sort);
   }, [allProducts, debouncedQuery, sort]);
+
+  // Meta Pixel: un evento Search por término (ya viene debounced, no spamea).
+  useEffect(() => {
+    if (debouncedQuery.trim()) trackSearch(debouncedQuery);
+  }, [debouncedQuery]);
 
   return {
     query,

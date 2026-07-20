@@ -1,19 +1,19 @@
 import Image from 'next/image';
-import { ArrowUpRight } from 'lucide-react';
 import { Product } from '@/lib/types';
-import { formatPrice, ensureAffiliateLink } from '@/lib/utils';
+import { formatPrice } from '@/lib/utils';
 import Badge from './Badge';
 import FavoriteButton from './FavoriteButton';
 import ShareButton from './ShareButton';
+import BuyButton from './BuyButton';
+import ProductImpression from './ProductImpression';
 
 export default function ProductCard({ product, priority = false }: { product: Product; priority?: boolean }) {
-  const href = ensureAffiliateLink(product.linkAfiliado);
-
   return (
     <article
       id={product.id}
       className="group flex flex-col overflow-hidden rounded-2xl border border-line bg-base-900 shadow-card transition-all duration-300 ease-smooth hover:border-line-strong hover:-translate-y-1 hover:shadow-soft animate-fadeInUp scroll-mt-24"
     >
+      <ProductImpression product={product} />
       <div className="relative aspect-[4/5] w-full overflow-hidden bg-white">
         {product.imagen ? (
           <Image
@@ -37,7 +37,7 @@ export default function ProductCard({ product, priority = false }: { product: Pr
         </div>
 
         <div className="absolute top-2.5 right-2.5 flex flex-col gap-2">
-          <FavoriteButton productId={product.id} />
+          <FavoriteButton productId={product.id} product={product} />
           <ShareButton product={product} />
         </div>
       </div>
@@ -70,19 +70,7 @@ export default function ProductCard({ product, priority = false }: { product: Pr
           <span className="text-sm font-bold text-emerald-400">Envío gratis 🚚</span>
         )}
 
-        <a
-          href={href}
-          target="_blank"
-          rel="nofollow sponsored noopener"
-          className="
-            mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-ml-yellow
-            px-2 py-3 text-xs sm:text-sm font-bold text-base-950 text-center transition-all duration-200 ease-smooth
-            hover:brightness-95 active:scale-[0.97]
-          "
-        >
-          VER EN MERCADO LIBRE
-          <ArrowUpRight size={16} strokeWidth={2.75} aria-hidden="true" />
-        </a>
+        <BuyButton product={product} />
       </div>
     </article>
   );

@@ -199,13 +199,34 @@ lib/
 
 ---
 
+## 12b. Meta Pixel (Facebook / Instagram Ads)
+
+El sitio ya trae el **Meta Pixel** integrado y trackeando los eventos clave para optimizar campañas. El ID por defecto está en `lib/constants.ts` y se puede sobreescribir con la variable de entorno `NEXT_PUBLIC_META_PIXEL_ID` (dejala vacía para desactivar el pixel).
+
+Eventos que dispara solo:
+
+| Evento (Meta) | Cuándo | Para qué sirve |
+|---|---|---|
+| `PageView` | En cada carga y en cada cambio de página (navegación interna) | Tráfico general y retargeting |
+| `ViewContent` | Cuando una tarjeta de producto entra en pantalla | Público que vio cada producto (value + moneda ARS) |
+| `Search` | Cuando el usuario busca algo | Intención por palabra clave |
+| `AddToWishlist` | Al tocar el ❤️ para guardar un producto | Interés fuerte / retargeting |
+| `ViewCategory` (custom) | Al entrar a una categoría | Segmentar por rubro |
+| `InitiateCheckout` + `OutboundClick` (custom) | Al hacer clic en **"Ver en Mercado Libre"** | La conversión más fuerte que el sitio puede medir (la compra ocurre en ML). Optimizá las campañas hacia `InitiateCheckout`. |
+
+Todos los eventos de producto incluyen `content_ids` (el `ItemId` de ML si está cargado), `content_name`, `value` y `currency: ARS`, listos para **catálogos y públicos personalizados** en Ads Manager.
+
+Verificalo con la extensión **Meta Pixel Helper** de Chrome entrando al sitio publicado.
+
+---
+
 ## 13. Preparado para el futuro
 
 La arquitectura ya deja lugar para, sin romper nada de lo existente:
 
 - **Login de administrador**: agregar `middleware.ts` + una tabla de usuarios (ej. con Vercel Postgres o Clerk/Auth.js) para proteger una futura ruta `/admin`.
-- **Panel de estadísticas / clics / visitas**: el botón "VER EN MERCADO LIBRE" en `components/ProductCard.tsx` es el lugar exacto para agregar un `onClick` que registre el evento (por ejemplo, contra una API route propia o directamente a Analytics).
-- **Google Analytics / Meta Pixel / TikTok Pixel**: se agregan como `<Script>` de `next/script` dentro de `app/layout.tsx`, dentro del `<body>`, con `strategy="afterInteractive"`.
+- **Panel de estadísticas / clics / visitas**: el clic en "VER EN MERCADO LIBRE" ya se captura en `components/BuyButton.tsx` (dispara el Meta Pixel); ese mismo `onClick` es el lugar para además registrarlo contra una API route propia o Analytics.
+- **Meta Pixel**: ya integrado (ver sección 12b). Para sumar **Google Analytics / TikTok Pixel** se replica el patrón: un componente con `<Script>` de `next/script` montado en `app/layout.tsx`, y los helpers de eventos en `lib/pixel.ts`.
 
 ---
 

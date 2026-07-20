@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { META_PIXEL_ID } from '@/lib/constants';
+import { resetViewContentDedup } from '@/lib/pixel';
 
 declare global {
   interface Window {
@@ -23,6 +24,8 @@ export default function PageViewTracker() {
 
   useEffect(() => {
     if (!META_PIXEL_ID) return;
+    // Al cambiar de ruta, las cards que aparezcan deben poder re-emitir ViewContent.
+    resetViewContentDedup();
     // Salteamos el primer render: ese PageView ya lo mandó el script del pixel.
     if (window.__mpFirstView === undefined) {
       window.__mpFirstView = false;
