@@ -184,26 +184,31 @@ function applyOffer(p: Product, m: MeliOffer | null): Product {
  */
 export async function syncWithMeli(products: Product[]): Promise<Product[]> {
   try {
-    const token = await getAppToken();
-
-    // Catálogo (requiere token): un fetch por CatalogId único.
-    const catIds = token ? [...new Set(products.map((p) => p.catalogId).filter(Boolean))] : [];
-    const catOffers = await resolveWithBudget(catIds, (cid) => fetchOffer(cid, token!), {
-      concurrency: 18,
-      budgetMs: 18000,
+    // 1) Precio de la TARJETA de afiliado para TODOS: es exactamente el que ve
+    // y paga el comprador al abrir el link (el "mejor precio" que ML deja
+    // seleccionado). La API de catálogo (buy_box) a veces devuelve null
+    // (perfumes) o el precio de otro vendedor, dejando precios viejos.
+    const links = [...new Set(products.map((p) => p.linkAfiliado).filter((l) => /meli\.la\//.test(l)))];
+    const linkOffers = await resolveWithBudget(links, fetchLinkOffer, {
+      concurrency: 12,
+      budgetMs: 24000,
     });
 
-    // Link (no requiere token): un fetch por link de los productos sin catálogo.
-    const linkProducts = products.filter((p) => !p.catalogId && /meli\.la\//.test(p.linkAfiliado));
-    const linkOffers = await resolveWithBudget(
-      [...new Set(linkProducts.map((p) => p.linkAfiliado))],
-      fetchLinkOffer,
-      { concurrency: 12, budgetMs: 18000 }
-    );
+    // 2) Catálogo SOLO como respaldo: cuando la tarjeta no resolvió y hay
+    // CatalogId (requiere token).
+    const token = await getAppToken();
+    const needCat = token ? products.filter((p) => p.catalogId && !linkOffers.get(p.linkAfiliado)) : [];
+    const catIds = [...new Set(needCat.map((p) => p.catalogId))];
+    const catOffers = await resolveWithBudget(catIds, (cid) => fetchOffer(cid, token!), {
+      concurrency: 15,
+      budgetMs: 8000,
+    });
 
     return products.map((p) => {
+      const card = linkOffers.get(p.linkAfiliado);
+      if (card) return applyOffer(p, card);
       if (p.catalogId) return applyOffer(p, catOffers.get(p.catalogId) ?? null);
-      return applyOffer(p, linkOffers.get(p.linkAfiliado) ?? null);
+      return p;
     });
   } catch (error) {
     console.error('[meli] Error sincronizando con Mercado Libre:', error);
