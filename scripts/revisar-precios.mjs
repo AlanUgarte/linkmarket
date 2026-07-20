@@ -101,7 +101,7 @@ async function main() {
   const results = await pool(targets, (r) => resolveCard((r[C.link] || '').trim()), CONCURRENCY);
   process.stderr.write('\n');
 
-  const changes = { precio: [], descuento: [], masVendido: [], rotos: [], mapNuevo: 0 };
+  const changes = { precio: [], descuento: [], rotos: [], mapNuevo: 0 };
   const corrected = dataRows.map((r, i) => {
     const row = r.slice(); while (row.length < width) row.push('');
     if (i >= targets.length) return row;
@@ -118,10 +118,9 @@ async function main() {
     const newD = disc(res.price, res.prev);
     if (oldD !== newD) changes.descuento.push(`${nombre}: ${oldD}% -> ${newD}%`);
     row[C.descuento] = newD ? String(newD) : '';
-    // Envío gratis NO se toca: la tarjeta no lo reporta de forma confiable, así
-    // que se preserva el valor de la planilla para no borrarlo por error.
-    if (bool(row[C.masVendido]) !== res.masVendido) changes.masVendido.push(`${nombre}: más vendido ${res.masVendido ? 'sí' : 'no'}`);
-    row[C.masVendido] = res.masVendido ? 'TRUE' : '';
+    // Envío gratis y Más vendido NO se tocan: la tarjeta no los reporta de forma
+    // confiable (el texto "más vendido" aparece en casi toda la página), así que
+    // se preservan los valores de la planilla para no corromperlos.
 
     if (res.prodUrl && map[link] !== res.prodUrl) { map[link] = res.prodUrl; changes.mapNuevo++; }
     return row;
@@ -132,11 +131,10 @@ async function main() {
 
   const R = [];
   R.push(`\n===== REVISIÓN DE PRECIOS =====`);
-  R.push(`Revisados: ${targets.length} | precios cambiados: ${changes.precio.length} | descuentos: ${changes.descuento.length} | más vendido: ${changes.masVendido.length} | links rotos: ${changes.rotos.length} | mapa actualizado: ${changes.mapNuevo}`);
+  R.push(`Revisados: ${targets.length} | precios cambiados: ${changes.precio.length} | descuentos: ${changes.descuento.length} | links rotos: ${changes.rotos.length} | mapa actualizado: ${changes.mapNuevo}`);
   const show = (t, arr, n = 40) => { if (arr.length) { R.push(`\n-- ${t} (${arr.length}) --`); arr.slice(0, n).forEach((x) => R.push('  ' + x)); if (arr.length > n) R.push(`  ...y ${arr.length - n} más`); } };
   show('PRECIOS CAMBIADOS', changes.precio);
   show('DESCUENTOS CAMBIADOS', changes.descuento);
-  show('MÁS VENDIDO CAMBIADO', changes.masVendido);
   show('LINKS ROTOS (revisar/regenerar)', changes.rotos);
   R.push(`\nArchivo para pegar en la planilla (celda A2): ${OUT_TSV}`);
   console.log(R.join('\n'));
