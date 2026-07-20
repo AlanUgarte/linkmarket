@@ -45,7 +45,9 @@ interface MeliOffer {
  * catálogo es el único camino autorizado, y además es el correcto.)
  */
 async function fetchOffer(catalogId: string, token: string): Promise<MeliOffer | null> {
-  const auth = { headers: { Authorization: `Bearer ${token}` }, next: { revalidate: 60 } };
+  // 5 min de cache: una vez resuelto, el precio no se re-pide en cada
+  // regeneración, así el presupuesto alcanza para cubrir TODOS los productos.
+  const auth = { headers: { Authorization: `Bearer ${token}` }, next: { revalidate: 300 } };
   // 1) Ganador del buy-box = EXACTAMENTE el precio que muestra la página del
   // producto al comprador (no siempre es el item más barato del catálogo).
   const prod = await fetch(`${PRODUCTS_URL}/${catalogId}`, auth);
@@ -187,8 +189,8 @@ export async function syncWithMeli(products: Product[]): Promise<Product[]> {
     // Catálogo (requiere token): un fetch por CatalogId único.
     const catIds = token ? [...new Set(products.map((p) => p.catalogId).filter(Boolean))] : [];
     const catOffers = await resolveWithBudget(catIds, (cid) => fetchOffer(cid, token!), {
-      concurrency: 12,
-      budgetMs: 9000,
+      concurrency: 18,
+      budgetMs: 18000,
     });
 
     // Link (no requiere token): un fetch por link de los productos sin catálogo.
@@ -196,7 +198,7 @@ export async function syncWithMeli(products: Product[]): Promise<Product[]> {
     const linkOffers = await resolveWithBudget(
       [...new Set(linkProducts.map((p) => p.linkAfiliado))],
       fetchLinkOffer,
-      { concurrency: 10, budgetMs: 12000 }
+      { concurrency: 12, budgetMs: 18000 }
     );
 
     return products.map((p) => {
