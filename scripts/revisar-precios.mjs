@@ -3,13 +3,12 @@
 //       LIMIT=10 node scripts/revisar-precios.mjs   (prueba con 10)
 //
 // Qué hace: baja la planilla, resuelve cada link meli.la (precio actual,
-// precio anterior, descuento, envío gratis, "más vendido" y link de producto),
-// compara con lo cargado, y genera:
-//   1) Un reporte en consola de todo lo que cambió o está roto.
-//   2) `Desktop/precios-corregidos.txt`: el catálogo corregido para PEGAR en A2.
-//   3) Actualiza `lib/linkMap.json` con los links de producto nuevos/cambiados.
-// El sitio ya sincroniza el precio en vivo desde la tarjeta; esto además deja la
-// PLANILLA (la base) al día y detecta links rotos.
+// precio anterior, descuento) y ESCRIBE los precios directo en la app:
+//   1) `lib/precios.json` { link: [precio, precioAnterior, descuento] } — la app
+//      lo lee como precio base (sin tocar la planilla). Hacer commit + deploy.
+//   2) Actualiza `lib/linkMap.json` con los links de producto nuevos/cambiados.
+//   3) Reporte en consola de lo que cambió y de los links rotos.
+// No se toca la planilla (Google Sheets) ni hace falta pegar nada a mano.
 
 import fs from 'fs';
 
@@ -18,7 +17,7 @@ const GID = process.env.GOOGLE_SHEET_GID || '404928457';
 const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID}`;
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36';
 const MAP_PATH = new URL('../lib/linkMap.json', import.meta.url);
-const OUT_TSV = process.env.OUT_TSV || 'C:/Users/Tyna/Desktop/precios-corregidos.txt';
+const PRECIOS_PATH = new URL('../lib/precios.json', import.meta.url);
 const AFFIL = '?matt_tool=98604370&matt_word=ugartestore';
 const LIMIT = process.env.LIMIT ? parseInt(process.env.LIMIT, 10) : Infinity;
 const CONCURRENCY = parseInt(process.env.CONCURRENCY || '10', 10);
@@ -101,42 +100,39 @@ async function main() {
   const results = await pool(targets, (r) => resolveCard((r[C.link] || '').trim()), CONCURRENCY);
   process.stderr.write('\n');
 
-  const changes = { precio: [], descuento: [], rotos: [], mapNuevo: 0 };
-  const corrected = dataRows.map((r, i) => {
-    const row = r.slice(); while (row.length < width) row.push('');
-    if (i >= targets.length) return row;
+  // Precios frescos que lee la app directamente: { link: [precio, precioAnterior, descuento] }.
+  const precios = JSON.parse(fs.existsSync(PRECIOS_PATH) ? fs.readFileSync(PRECIOS_PATH, 'utf8') : '{}');
+  const changes = { precio: [], descuento: [], rotos: [], mapNuevo: 0, actualizados: 0 };
+  targets.forEach((r, i) => {
     const res = results[i];
-    const nombre = (row[1] || '').slice(0, 34);
-    const link = (row[C.link] || '').trim();
-    if (!res) { if (link) changes.rotos.push(`${nombre}  ${link}`); return row; }
+    const nombre = (r[1] || '').slice(0, 34);
+    const link = (r[C.link] || '').trim();
+    if (!res) { if (link) changes.rotos.push(`${nombre}  ${link}`); return; }
 
-    const oldP = parseFloat((row[C.precio] || '').replace(/[^0-9.]/g, '')) || 0;
+    const prev = precios[link] || [];
+    const oldP = prev[0] || parseFloat((r[C.precio] || '').replace(/[^0-9.]/g, '')) || 0;
     if (Math.abs(oldP - res.price) >= 1) changes.precio.push(`${nombre}: $${oldP} -> $${res.price}`);
-    row[C.precio] = String(res.price);
-    row[C.precioAnt] = res.prev ? String(res.prev) : '';
-    const oldD = parseInt(row[C.descuento] || '0', 10) || 0;
     const newD = disc(res.price, res.prev);
+    const oldD = prev[2] ?? (parseInt(r[C.descuento] || '0', 10) || 0);
     if (oldD !== newD) changes.descuento.push(`${nombre}: ${oldD}% -> ${newD}%`);
-    row[C.descuento] = newD ? String(newD) : '';
-    // Envío gratis y Más vendido NO se tocan: la tarjeta no los reporta de forma
-    // confiable (el texto "más vendido" aparece en casi toda la página), así que
-    // se preservan los valores de la planilla para no corromperlos.
 
+    // Escribe el precio directo en la app (no se toca la planilla).
+    precios[link] = [res.price, res.prev || 0, newD];
+    changes.actualizados++;
     if (res.prodUrl && map[link] !== res.prodUrl) { map[link] = res.prodUrl; changes.mapNuevo++; }
-    return row;
   });
 
-  fs.writeFileSync(OUT_TSV, corrected.map((r) => r.join('\t')).join('\n'));
+  fs.writeFileSync(PRECIOS_PATH, JSON.stringify(precios, null, 0));
   fs.writeFileSync(MAP_PATH, JSON.stringify(map, null, 0));
 
   const R = [];
   R.push(`\n===== REVISIÓN DE PRECIOS =====`);
-  R.push(`Revisados: ${targets.length} | precios cambiados: ${changes.precio.length} | descuentos: ${changes.descuento.length} | links rotos: ${changes.rotos.length} | mapa actualizado: ${changes.mapNuevo}`);
+  R.push(`Revisados: ${targets.length} | precios escritos en la app: ${changes.actualizados} | precios cambiados: ${changes.precio.length} | descuentos: ${changes.descuento.length} | links rotos: ${changes.rotos.length} | mapa actualizado: ${changes.mapNuevo}`);
   const show = (t, arr, n = 40) => { if (arr.length) { R.push(`\n-- ${t} (${arr.length}) --`); arr.slice(0, n).forEach((x) => R.push('  ' + x)); if (arr.length > n) R.push(`  ...y ${arr.length - n} más`); } };
   show('PRECIOS CAMBIADOS', changes.precio);
   show('DESCUENTOS CAMBIADOS', changes.descuento);
   show('LINKS ROTOS (revisar/regenerar)', changes.rotos);
-  R.push(`\nArchivo para pegar en la planilla (celda A2): ${OUT_TSV}`);
+  R.push(`\nPrecios escritos en lib/precios.json (la app los usa directo). Hacer commit + deploy.`);
   console.log(R.join('\n'));
 }
 

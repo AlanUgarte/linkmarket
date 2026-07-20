@@ -3,11 +3,32 @@ import { normalizeProduct } from './utils';
 import { syncWithMeli } from './meli';
 import { REVALIDATE_SECONDS, SHEET_GID } from './constants';
 import linkMap from './linkMap.json';
+import preciosJson from './precios.json';
+import { computeDiscount } from './utils';
 
 // Los `meli.la` abren el PERFIL en la web (forceInApp de ML), no el producto.
 // Este mapa (armado offline) traduce cada `meli.la` a su link directo de
 // producto con el mismo matt_tool de afiliado. La planilla no se toca.
 const LINK_MAP = linkMap as Record<string, string>;
+
+// Precios frescos escritos por `scripts/revisar-precios.mjs` (comando "Revisa
+// los precios"): { link: [precio, precioAnterior, descuento] }. Se usan como
+// precio base en lugar del de la planilla (que puede quedar viejo). La sync en
+// vivo con ML los pisa arriba cuando alcanza a resolverlos.
+const PRECIOS = preciosJson as Record<string, [number, number, number]>;
+
+function withPrecioFresco(p: Product): Product {
+  const fresco = PRECIOS[p.linkAfiliado];
+  if (!fresco) return p;
+  const [precio, precioAnterior, descuento] = fresco;
+  if (!precio) return p;
+  return {
+    ...p,
+    precio,
+    precioAnterior: precioAnterior || null,
+    descuento: descuento || computeDiscount(precio, precioAnterior || null),
+  };
+}
 
 /**
  * Resuelve el link del botón al producto y, si es una página de catálogo
@@ -162,11 +183,9 @@ export async function getProducts(): Promise<Product[]> {
       return [];
     }
   }
-  // Resolver el link del botón al producto y derivar CatalogId ANTES de la
-  // sync, para que el precio salga de la API de catálogo (no de la tarjeta
-  // del afiliado). No se toca `linkAfiliado`.
-  const resolved = products.map(withResolvedLink);
-  // Precios/envío en vivo desde Mercado Libre.
+  // 1) Precio base fresco (de la última "Revisa los precios") en vez del de la
+  //    planilla. 2) Resolver link del botón + CatalogId. 3) Sync en vivo arriba.
+  const resolved = products.map(withPrecioFresco).map(withResolvedLink);
   return syncWithMeli(resolved);
 }
 
