@@ -18,3 +18,7 @@ export const REVALIDATE_SECONDS = 60;
 
 // gid de la pestaña de productos (está en la URL de la planilla: #gid=NNN).
 export const SHEET_GID = process.env.GOOGLE_SHEET_GID || '0';
+
+// ID del Meta Pixel (Facebook/Instagram Ads). Se puede sobreescribir por env.
+// Vacío = el pixel no se carga (útil para previews o si algún día lo sacás).
+export const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID || '1539880447631462';
