@@ -59,6 +59,7 @@ export const CATEGORIES: Category[] = [
   { slug: 'cuidado-del-cabello', nombre: 'Cuidado del Cabello', emoji: '💆‍♀️', descripcion: 'Shampoo, tratamientos y cuidado capilar.', grupo: 'Belleza y Cuidado Personal', grupoEmoji: '💄' },
   { slug: 'dermocosmetica', nombre: 'Dermocosmética', emoji: '🧪', descripcion: 'Dermocosmética y cuidado especializado de la piel.', grupo: 'Belleza y Cuidado Personal', grupoEmoji: '💄' },
   { slug: 'belleza-profesional', nombre: 'Belleza Profesional', emoji: '💅', descripcion: 'Productos y equipamiento de belleza profesional.', grupo: 'Belleza y Cuidado Personal', grupoEmoji: '💄' },
+  { slug: 'suplementos', nombre: 'Suplementos', emoji: '💊', descripcion: 'Proteínas, creatina, vitaminas y suplementos.', grupo: 'Salud', grupoEmoji: '🩺' },
   {
     slug: 'ofertas-del-dia',
     nombre: 'Ofertas del día',
