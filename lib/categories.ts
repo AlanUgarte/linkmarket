@@ -60,6 +60,9 @@ export const CATEGORIES: Category[] = [
   { slug: 'dermocosmetica', nombre: 'Dermocosmética', emoji: '🧪', descripcion: 'Dermocosmética y cuidado especializado de la piel.', grupo: 'Belleza y Cuidado Personal', grupoEmoji: '💄' },
   { slug: 'belleza-profesional', nombre: 'Belleza Profesional', emoji: '💅', descripcion: 'Productos y equipamiento de belleza profesional.', grupo: 'Belleza y Cuidado Personal', grupoEmoji: '💄' },
   { slug: 'suplementos', nombre: 'Suplementos', emoji: '💊', descripcion: 'Proteínas, creatina, vitaminas y suplementos.', grupo: 'Salud', grupoEmoji: '🩺' },
+  { slug: 'equipamiento-medico', nombre: 'Equipamiento Médico', emoji: '🩺', descripcion: 'Tensiómetros, nebulizadores, oxímetros y más.', grupo: 'Salud', grupoEmoji: '🩺' },
+  { slug: 'masajeadores', nombre: 'Masajeadores', emoji: '💆', descripcion: 'Masajeadores y pistolas de masaje muscular.', grupo: 'Salud', grupoEmoji: '🩺' },
+  { slug: 'equipamiento-comercial', nombre: 'Equipamiento Comercial', emoji: '🏪', descripcion: 'Balanzas, lectores de código y equipo para tu negocio.' },
   {
     slug: 'ofertas-del-dia',
     nombre: 'Ofertas del día',
