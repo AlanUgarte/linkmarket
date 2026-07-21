@@ -161,7 +161,7 @@ function setup() {
   seedConfig_(ss);
   buildDashboardLayout_(ss);
   rebuildDashboard();
-  buildCharts_(ss);
+  generarGraficos(); // gráficos con estilo (ver generarGraficos.gs)
   installTrigger_();
   SpreadsheetApp.getUi &&
     tryUi_('LinkMarket Analytics', 'Setup completado. Ya podés implementar la Web App.');
