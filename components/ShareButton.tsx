@@ -43,10 +43,10 @@ export default function ShareButton({ product }: { product: Product }) {
       type="button"
       onClick={handleShare}
       aria-label="Compartir producto"
-      className="inline-flex items-center justify-center w-9 h-9 rounded-full border border-line-strong bg-base-950/60 backdrop-blur-md text-ink transition-all duration-200 ease-smooth hover:border-ink-faint active:scale-90"
+      className="inline-flex items-center justify-center w-9 h-9 rounded-full border border-line bg-white/90 shadow-sm text-ink-dim transition-all duration-200 ease-smooth hover:bg-white active:scale-90"
     >
       {copied ? (
-        <Check size={16} strokeWidth={2.5} className="text-ml-yellow" aria-hidden="true" />
+        <Check size={16} strokeWidth={2.5} className="text-ml-green" aria-hidden="true" />
       ) : (
         <Share2 size={16} strokeWidth={2.25} aria-hidden="true" />
       )}

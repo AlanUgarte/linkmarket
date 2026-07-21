@@ -34,6 +34,13 @@ export interface Product {
   descuento: number;
   imagen: string;
   linkAfiliado: string;
+  /**
+   * Link de afiliado resuelto al PRODUCTO (el `meli.la` en la web redirige al
+   * perfil por `forceInApp`; este es el link directo `/p/MLA...` con el mismo
+   * matt_tool). El botón "Ver en Mercado Libre" usa este; si falta, cae al
+   * `linkAfiliado`. Se arma desde lib/linkMap.json.
+   */
+  linkProducto?: string;
   activo: boolean;
   orden: number;
   destacado: boolean;

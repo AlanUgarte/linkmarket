@@ -63,11 +63,11 @@ export default function ProductCard({ product, priority = false }: { product: Pr
         <div className="flex items-baseline gap-2 flex-wrap">
           <span className="text-xl font-bold text-ink tracking-tight">{formatPrice(product.precio)}</span>
           {product.descuento > 0 && (
-            <span className="text-sm font-bold text-emerald-400">{product.descuento}% OFF</span>
+            <span className="text-sm font-bold text-ml-green">{product.descuento}% OFF</span>
           )}
         </div>
         {product.envioGratis && (
-          <span className="text-sm font-bold text-emerald-400">Envío gratis 🚚</span>
+          <span className="text-sm font-bold text-ml-green">Envío gratis 🚚</span>
         )}
 
         <BuyButton product={product} />

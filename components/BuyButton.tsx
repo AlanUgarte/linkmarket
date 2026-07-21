@@ -11,7 +11,8 @@ import { trackOutboundClick } from '@/lib/pixel';
  * sin bloquear ni retrasar la apertura del link de afiliado.
  */
 export default function BuyButton({ product }: { product: Product }) {
-  const href = ensureAffiliateLink(product.linkAfiliado);
+  // Preferimos el link directo al producto (linkProducto); si falta, el de afiliado.
+  const href = ensureAffiliateLink(product.linkProducto || product.linkAfiliado);
 
   return (
     <a
@@ -21,7 +22,7 @@ export default function BuyButton({ product }: { product: Product }) {
       onClick={() => trackOutboundClick(product)}
       className="
         mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-ml-yellow
-        px-2 py-3 text-xs sm:text-sm font-bold text-base-950 text-center transition-all duration-200 ease-smooth
+        px-2 py-3 text-xs sm:text-sm font-bold text-ink text-center transition-all duration-200 ease-smooth
         hover:brightness-95 active:scale-[0.97]
       "
     >

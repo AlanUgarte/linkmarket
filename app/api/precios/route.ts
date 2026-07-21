@@ -3,6 +3,8 @@ import { getProducts } from '@/lib/googleSheets';
 // CSV con los precios EN VIVO, pensado para que la planilla de Google lo
 // importe con =IMPORTDATA(...) en la pestaña "PreciosVivos".
 export const revalidate = 60;
+// Margen para la sincronizacion de precios con muchos productos (Vercel).
+export const maxDuration = 60;
 
 export async function GET() {
   const products = await getProducts();

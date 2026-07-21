@@ -1,6 +1,5 @@
 import { Product } from './types';
 import { computeDiscount } from './utils';
-import { REVALIDATE_SECONDS } from './constants';
 
 const TOKEN_URL = 'https://api.mercadolibre.com/oauth/token';
 const PRODUCTS_URL = 'https://api.mercadolibre.com/products';
@@ -46,10 +45,19 @@ interface MeliOffer {
  * catálogo es el único camino autorizado, y además es el correcto.)
  */
 async function fetchOffer(catalogId: string, token: string): Promise<MeliOffer | null> {
-  const res = await fetch(`${PRODUCTS_URL}/${catalogId}/items`, {
-    headers: { Authorization: `Bearer ${token}` },
-    next: { revalidate: 60 },
-  });
+  // 5 min de cache: una vez resuelto, el precio no se re-pide en cada
+  // regeneración, así el presupuesto alcanza para cubrir TODOS los productos.
+  const auth = { headers: { Authorization: `Bearer ${token}` }, next: { revalidate: 300 } };
+  // 1) Ganador del buy-box = EXACTAMENTE el precio que muestra la página del
+  // producto al comprador (no siempre es el item más barato del catálogo).
+  const prod = await fetch(`${PRODUCTS_URL}/${catalogId}`, auth);
+  if (prod.ok) {
+    const d = await prod.json();
+    const w = d?.buy_box_winner;
+    if (w && typeof w.price === 'number') return w;
+  }
+  // 2) Fallback: primer item del catálogo.
+  const res = await fetch(`${PRODUCTS_URL}/${catalogId}/items`, auth);
   if (!res.ok) return null;
   const data = await res.json();
   const winner = data?.results?.[0];
@@ -116,13 +124,41 @@ async function fetchLinkOffer(link: string): Promise<MeliOffer | null> {
           'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36',
       },
       redirect: 'follow',
-      next: { revalidate: REVALIDATE_SECONDS },
+      // 1 hora (no 60s): con 200+ productos, refrescar todos los links en cada
+      // regeneración excede el tiempo de la función y la página queda STALE.
+      // Con 1h, la mayoría de las regeneraciones pegan en el data cache (rápido)
+      // y los precios de link se renuevan gradualmente.
+      next: { revalidate: 3600 },
     });
     if (!res.ok) return null;
     return parseFeaturedOffer(await res.text());
   } catch {
     return null;
   }
+}
+
+/**
+ * Ejecuta tareas con concurrencia limitada y un presupuesto de tiempo global.
+ * Lo que no llega a resolverse dentro del presupuesto queda como null (el
+ * producto conserva el precio de la planilla) — el data cache de Next hace que
+ * en la próxima regeneración esas mismas consultas sean instantáneas.
+ */
+async function resolveWithBudget<K>(
+  keys: K[],
+  task: (key: K) => Promise<MeliOffer | null>,
+  { concurrency, budgetMs }: { concurrency: number; budgetMs: number }
+): Promise<Map<K, MeliOffer | null>> {
+  const results = new Map<K, MeliOffer | null>();
+  let next = 0;
+  const worker = async () => {
+    while (next < keys.length) {
+      const key = keys[next++];
+      results.set(key, await task(key));
+    }
+  };
+  const all = Promise.all(Array.from({ length: Math.min(concurrency, keys.length) }, worker));
+  await Promise.race([all, new Promise((r) => setTimeout(r, budgetMs))]);
+  return results;
 }
 
 function applyOffer(p: Product, m: MeliOffer | null): Product {
@@ -148,27 +184,31 @@ function applyOffer(p: Product, m: MeliOffer | null): Product {
  */
 export async function syncWithMeli(products: Product[]): Promise<Product[]> {
   try {
+    // 1) Precio de la TARJETA de afiliado para TODOS: es exactamente el que ve
+    // y paga el comprador al abrir el link (el "mejor precio" que ML deja
+    // seleccionado). La API de catálogo (buy_box) a veces devuelve null
+    // (perfumes) o el precio de otro vendedor, dejando precios viejos.
+    const links = [...new Set(products.map((p) => p.linkAfiliado).filter((l) => /meli\.la\//.test(l)))];
+    const linkOffers = await resolveWithBudget(links, fetchLinkOffer, {
+      concurrency: 12,
+      budgetMs: 24000,
+    });
+
+    // 2) Catálogo SOLO como respaldo: cuando la tarjeta no resolvió y hay
+    // CatalogId (requiere token).
     const token = await getAppToken();
-
-    // Catálogo (requiere token): un fetch por CatalogId único.
-    const catIds = token ? [...new Set(products.map((p) => p.catalogId).filter(Boolean))] : [];
-    const catOffers = new Map<string, MeliOffer | null>(
-      await Promise.all(
-        catIds.map(async (cid): Promise<[string, MeliOffer | null]> => [cid, await fetchOffer(cid, token!)])
-      )
-    );
-
-    // Link (no requiere token): un fetch por link de los productos sin catálogo.
-    const linkProducts = products.filter((p) => !p.catalogId && /meli\.la\//.test(p.linkAfiliado));
-    const linkOffers = new Map<string, MeliOffer | null>(
-      await Promise.all(
-        linkProducts.map(async (p): Promise<[string, MeliOffer | null]> => [p.linkAfiliado, await fetchLinkOffer(p.linkAfiliado)])
-      )
-    );
+    const needCat = token ? products.filter((p) => p.catalogId && !linkOffers.get(p.linkAfiliado)) : [];
+    const catIds = [...new Set(needCat.map((p) => p.catalogId))];
+    const catOffers = await resolveWithBudget(catIds, (cid) => fetchOffer(cid, token!), {
+      concurrency: 15,
+      budgetMs: 8000,
+    });
 
     return products.map((p) => {
+      const card = linkOffers.get(p.linkAfiliado);
+      if (card) return applyOffer(p, card);
       if (p.catalogId) return applyOffer(p, catOffers.get(p.catalogId) ?? null);
-      return applyOffer(p, linkOffers.get(p.linkAfiliado) ?? null);
+      return p;
     });
   } catch (error) {
     console.error('[meli] Error sincronizando con Mercado Libre:', error);

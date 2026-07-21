@@ -29,7 +29,7 @@ export default function SearchBar({
         className="
           w-full rounded-xl border border-line bg-base-900 py-3 pl-11 pr-10 text-sm text-ink
           placeholder:text-ink-faint transition-colors duration-200 ease-smooth
-          focus:border-ml-yellow/50 focus:outline-none
+          focus:border-ml-blue focus:outline-none
         "
       />
       {value && (

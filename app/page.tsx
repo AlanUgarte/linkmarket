@@ -10,6 +10,8 @@ import ProductGrid from '@/components/ProductGrid';
 // importarse de otro archivo). Si cambiás este valor, actualizalo también
 // en `lib/constants.ts`, `app/[category]/page.tsx` y `app/api/products/route.ts`.
 export const revalidate = 60;
+// Margen para la sincronizacion de precios con muchos productos (Vercel).
+export const maxDuration = 60;
 
 export default async function HomePage() {
   const products = await getProducts();
@@ -23,7 +25,7 @@ export default async function HomePage() {
       {/* Hero compacto: el protagonista es el catálogo */}
       <section className="pt-6 sm:pt-8 pb-6 text-center flex flex-col items-center gap-2 animate-fadeIn">
         <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-base-900 px-3 py-1 text-xs font-medium text-ink-dim">
-          <Flame size={13} className="text-ml-yellow" aria-hidden="true" />
+          <Flame size={13} className="text-ml-green" aria-hidden="true" />
           Selección curada, actualizada todos los días
         </span>
         <h1 className="text-display-md text-ink text-balance max-w-2xl">{SITE.tagline}</h1>

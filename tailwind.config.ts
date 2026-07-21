@@ -10,27 +10,28 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Fondo casi negro, nunca #000 puro (se ve más premium con un poco de tinte azulado)
+        // Tema claro estilo Mercado Libre: fondo gris muy claro, superficies blancas.
         base: {
-          950: '#0A0A0B',
-          900: '#111113',
-          800: '#18181B',
-          700: '#232326',
-          600: '#333338',
+          950: '#EBEBEB', // fondo de página (gris ML)
+          900: '#FFFFFF', // superficie / tarjeta
+          800: '#F5F5F5', // relleno sutil / hover
+          700: '#EDEDED',
+          600: '#E0E0E0',
         },
         line: {
-          DEFAULT: 'rgba(255,255,255,0.08)',
-          strong: 'rgba(255,255,255,0.14)',
+          DEFAULT: 'rgba(0,0,0,0.09)',
+          strong: 'rgba(0,0,0,0.16)',
         },
         ink: {
-          DEFAULT: '#F5F5F4',
-          dim: '#A1A1AA',
-          faint: '#71717A',
+          DEFAULT: '#333333', // texto principal ML (~rgba(0,0,0,.8))
+          dim: '#666666',
+          faint: '#8C8C8C',
         },
         ml: {
-          // Amarillo Mercado Libre, la única nota de color saturada de toda la UI
-          yellow: '#FFE600',
-          'yellow-dim': '#3A3600',
+          yellow: '#FFE600', // amarillo header ML
+          'yellow-dim': '#FFF159',
+          blue: '#3483FA', // azul de acción ML (links, foco)
+          green: '#00A650', // verde precio / envío gratis ML
         },
       },
       fontFamily: {
@@ -46,9 +47,9 @@ const config: Config = {
         '4xl': '2rem',
       },
       boxShadow: {
-        soft: '0 1px 2px rgba(0,0,0,0.4), 0 8px 24px -8px rgba(0,0,0,0.5)',
-        glow: '0 0 0 1px rgba(255,230,0,0.25), 0 8px 32px -8px rgba(255,230,0,0.15)',
-        card: '0 1px 0 rgba(255,255,255,0.04) inset, 0 1px 3px rgba(0,0,0,0.4)',
+        soft: '0 1px 2px rgba(0,0,0,0.08), 0 6px 20px -8px rgba(0,0,0,0.16)',
+        glow: '0 0 0 1px rgba(255,230,0,0.5), 0 6px 20px -8px rgba(0,0,0,0.14)',
+        card: '0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06)',
       },
       keyframes: {
         fadeInUp: {

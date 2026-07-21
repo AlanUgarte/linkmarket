@@ -11,11 +11,11 @@ export default function Logo({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
   return (
     <Link href="/" className="group flex items-center gap-2.5 shrink-0" aria-label={`${SITE.name}, ir al inicio`}>
       <span
-        className={`${sizes[size]} rounded-xl bg-ml-yellow text-base-950 font-extrabold flex items-center justify-center transition-transform duration-300 ease-smooth group-hover:scale-105 group-active:scale-95`}
+        className={`${sizes[size]} rounded-xl bg-neutral-900 text-ml-yellow font-extrabold flex items-center justify-center transition-transform duration-300 ease-smooth group-hover:scale-105 group-active:scale-95`}
       >
         {SITE.name.charAt(0)}
       </span>
-      <span className="font-bold tracking-tight text-ink text-lg">{SITE.name}</span>
+      <span className="font-bold tracking-tight text-neutral-900 text-lg hidden sm:block">{SITE.name}</span>
     </Link>
   );
 }

@@ -2,6 +2,52 @@ import { Product, ProductRaw } from './types';
 import { normalizeProduct } from './utils';
 import { syncWithMeli } from './meli';
 import { REVALIDATE_SECONDS, SHEET_GID } from './constants';
+import linkMap from './linkMap.json';
+import preciosJson from './precios.json';
+import { computeDiscount } from './utils';
+
+// Los `meli.la` abren el PERFIL en la web (forceInApp de ML), no el producto.
+// Este mapa (armado offline) traduce cada `meli.la` a su link directo de
+// producto con el mismo matt_tool de afiliado. La planilla no se toca.
+const LINK_MAP = linkMap as Record<string, string>;
+
+// Precios frescos escritos por `scripts/revisar-precios.mjs` (comando "Revisa
+// los precios"): { link: [precio, precioAnterior, descuento] }. Se usan como
+// precio base en lugar del de la planilla (que puede quedar viejo). La sync en
+// vivo con ML los pisa arriba cuando alcanza a resolverlos.
+// Tipado como number[] (no tupla): el JSON importado se infiere como number[],
+// y castear directo a [number, number, number] rompe el build de tipos.
+const PRECIOS = preciosJson as Record<string, number[]>;
+
+function withPrecioFresco(p: Product): Product {
+  const fresco = PRECIOS[p.linkAfiliado];
+  if (!fresco) return p;
+  const [precio, precioAnterior, descuento] = fresco;
+  if (!precio) return p;
+  return {
+    ...p,
+    precio,
+    precioAnterior: precioAnterior || null,
+    descuento: descuento || computeDiscount(precio, precioAnterior || null),
+  };
+}
+
+/**
+ * Resuelve el link del botón al producto y, si es una página de catálogo
+ * (`/p/MLA...`), deriva el CatalogId. Así la sincronización de precios usa la
+ * API de catálogo (precio del ganador del buy-box = el que ve el comprador),
+ * en vez de la tarjeta destacada del afiliado, que suele traer un precio viejo.
+ */
+function withResolvedLink(p: Product): Product {
+  const resolved = LINK_MAP[p.linkAfiliado];
+  if (!resolved) return p;
+  const catMatch = resolved.match(/\/p\/(MLA\d+)/);
+  return {
+    ...p,
+    linkProducto: resolved,
+    catalogId: p.catalogId || (catMatch ? catMatch[1] : p.catalogId),
+  };
+}
 
 // El orden real de columnas en la hoja de cálculo (deben coincidir con el README).
 const SHEET_COLUMN_ORDER: (keyof ProductRaw)[] = [
@@ -139,8 +185,10 @@ export async function getProducts(): Promise<Product[]> {
       return [];
     }
   }
-  // Precios/envío en vivo desde Mercado Libre (si hay credenciales e ItemIds).
-  return syncWithMeli(products);
+  // 1) Precio base fresco (de la última "Revisa los precios") en vez del de la
+  //    planilla. 2) Resolver link del botón + CatalogId. 3) Sync en vivo arriba.
+  const resolved = products.map(withPrecioFresco).map(withResolvedLink);
+  return syncWithMeli(resolved);
 }
 
 export const SHEETS_REVALIDATE = REVALIDATE_SECONDS;

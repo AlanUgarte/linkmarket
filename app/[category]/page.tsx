@@ -9,6 +9,8 @@ import CategoryViewTracker from '@/components/CategoryViewTracker';
 
 // Ver nota sobre este literal en app/page.tsx
 export const revalidate = 60;
+// Margen para la sincronizacion de precios con muchos productos (Vercel).
+export const maxDuration = 60;
 
 export function generateStaticParams() {
   return CATEGORIES.map((c) => ({ category: c.slug }));
