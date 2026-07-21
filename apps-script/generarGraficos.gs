@@ -72,7 +72,6 @@ function generarGraficos() {
         .setOption('backgroundColor', '#ffffff')
         .setOption('colors', PAL)
         .setOption('legend', legend === 'none' ? { position: 'none' } : { position: 'right', textStyle: { fontSize: 11 } })
-        .setOption('chartArea', { left: isBarLong ? 180 : 60, top: 44, width: isBarLong ? '62%' : '80%', height: '72%' })
         .setOption('hAxis', { textStyle: { fontSize: 11 }, gridlines: { color: '#eef0f4' } })
         .setOption('vAxis', { textStyle: { fontSize: 11 }, gridlines: { color: '#eef0f4' } });
 
