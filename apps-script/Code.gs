@@ -237,7 +237,9 @@ function rebuildDashboard() {
   var ev = ss.getSheetByName(SHEETS.EVENTOS);
   var lastRow = ev.getLastRow();
   var rows = lastRow > 1 ? ev.getRange(2, 1, lastRow - 1, HEADERS.length).getValues() : [];
-  var tz = ss.getSpreadsheetTimeZone();
+  // Fallback: en algunas planillas getSpreadsheetTimeZone() viene vacío y
+  // Utilities.formatDate exige un string válido (si no, tira "Invalid timeZone").
+  var tz = ss.getSpreadsheetTimeZone() || 'America/Argentina/Buenos_Aires';
 
   var agg = aggregate_(rows, tz);
 
