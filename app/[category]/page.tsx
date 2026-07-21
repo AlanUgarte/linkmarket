@@ -5,6 +5,7 @@ import { CATEGORIES, getCategoryBySlug } from '@/lib/categories';
 import { SITE } from '@/lib/constants';
 import { Product, SortOption } from '@/lib/types';
 import ProductExplorer from '@/components/ProductExplorer';
+import CategoryViewTracker from '@/components/CategoryViewTracker';
 
 // Ver nota sobre este literal en app/page.tsx
 export const revalidate = 60;
@@ -105,6 +106,8 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
         // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+
+      <CategoryViewTracker name={category.nombre} />
 
       <header className="mb-6 flex flex-col gap-1.5">
         <h1 className="text-display-md text-ink flex items-center gap-2.5">

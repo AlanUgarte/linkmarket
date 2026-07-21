@@ -15,7 +15,9 @@ const LINK_MAP = linkMap as Record<string, string>;
 // los precios"): { link: [precio, precioAnterior, descuento] }. Se usan como
 // precio base en lugar del de la planilla (que puede quedar viejo). La sync en
 // vivo con ML los pisa arriba cuando alcanza a resolverlos.
-const PRECIOS = preciosJson as Record<string, [number, number, number]>;
+// Tipado como number[] (no tupla): el JSON importado se infiere como number[],
+// y castear directo a [number, number, number] rompe el build de tipos.
+const PRECIOS = preciosJson as Record<string, number[]>;
 
 function withPrecioFresco(p: Product): Product {
   const fresco = PRECIOS[p.linkAfiliado];

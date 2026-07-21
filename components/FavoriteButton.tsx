@@ -2,8 +2,16 @@
 
 import { Heart } from 'lucide-react';
 import { useFavorites } from '@/hooks/useFavorites';
+import { Product } from '@/lib/types';
+import { trackAddToWishlist } from '@/lib/pixel';
 
-export default function FavoriteButton({ productId }: { productId: string }) {
+export default function FavoriteButton({
+  productId,
+  product,
+}: {
+  productId: string;
+  product?: Product;
+}) {
   const { isFavorite, toggleFavorite, hydrated } = useFavorites();
   const active = hydrated && isFavorite(productId);
 
@@ -13,6 +21,8 @@ export default function FavoriteButton({ productId }: { productId: string }) {
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
+        // Solo trackeamos el alta (cuando pasa de no-favorito a favorito).
+        if (!isFavorite(productId) && product) trackAddToWishlist(product);
         toggleFavorite(productId);
       }}
       aria-pressed={active}

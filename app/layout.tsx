@@ -1,9 +1,12 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
+import { Suspense } from 'react';
 import './globals.css';
 import { SITE } from '@/lib/constants';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import MetaPixel from '@/components/MetaPixel';
+import AnalyticsTracker from '@/components/AnalyticsTracker';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -100,6 +103,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es-AR" className={inter.variable}>
       <body className="min-h-screen flex flex-col font-sans">
+        <MetaPixel />
+        <Suspense fallback={null}>
+          <AnalyticsTracker />
+        </Suspense>
         <script
           type="application/ld+json"
           // eslint-disable-next-line react/no-danger
