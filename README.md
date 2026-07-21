@@ -199,13 +199,70 @@ lib/
 
 ---
 
+## 12b. Meta Pixel (Facebook / Instagram Ads)
+
+El sitio ya trae el **Meta Pixel** integrado y trackeando los eventos clave para optimizar campañas. El ID por defecto está en `lib/constants.ts` y se puede sobreescribir con la variable de entorno `NEXT_PUBLIC_META_PIXEL_ID` (dejala vacía para desactivar el pixel).
+
+Eventos que dispara solo:
+
+| Evento (Meta) | Cuándo | Para qué sirve |
+|---|---|---|
+| `PageView` | En cada carga y en cada cambio de página (navegación interna) | Tráfico general y retargeting |
+| `ViewContent` | Cuando una tarjeta de producto entra en pantalla | Público que vio cada producto (value + moneda ARS) |
+| `Search` | Cuando el usuario busca algo | Intención por palabra clave |
+| `AddToWishlist` | Al tocar el ❤️ para guardar un producto | Interés fuerte / retargeting |
+| `ViewCategory` (custom) | Al entrar a una categoría | Segmentar por rubro |
+| `InitiateCheckout` + `OutboundClick` (custom) | Al hacer clic en **"Ver en Mercado Libre"** | La conversión más fuerte que el sitio puede medir (la compra ocurre en ML). Optimizá las campañas hacia `InitiateCheckout`. |
+
+Todos los eventos de producto incluyen `content_ids` (el `ItemId` de ML si está cargado), `content_name`, `value` y `currency: ARS`, listos para **catálogos y públicos personalizados** en Ads Manager.
+
+Verificalo con la extensión **Meta Pixel Helper** de Chrome entrando al sitio publicado.
+
+### Conversions API (envío server-side, opcional pero recomendado)
+
+Además del pixel del navegador, cada evento se **espeja desde el servidor** vía la ruta `app/api/track/route.ts` hacia la Conversions API de Meta. Esto recupera los eventos que el pixel pierde por **ad-blockers, iOS/Safari (ITP) y extensiones de privacidad** (suele ser 30–50% del total). Los dos canales comparten un `event_id`, así Meta **deduplica** y no cuenta doble.
+
+Para activarlo seteá en Vercel (o `.env.local`):
+
+- `META_CAPI_ACCESS_TOKEN` — token de la CAPI: **Events Manager → tu pixel → Configuración → Conversions API → Generar token de acceso**. Es secreto (no lleva `NEXT_PUBLIC_`).
+- `META_CAPI_TEST_EVENT_CODE` *(solo para probar)* — de **Events Manager → Probar eventos**. Con esto ves los eventos server-side en vivo. Vaciá esta variable en producción.
+
+Si dejás el token vacío, la CAPI queda apagada y el sitio sigue funcionando solo con el pixel del navegador (no rompe nada). Como no hay login, el matching server-side usa IP, user-agent y las cookies `_fbp`/`_fbc` (incluye el `fbclid` del clic del anuncio) — no se envían datos personales.
+
+---
+
+## 12c. Analítica propia en Google Sheets (tu base de datos)
+
+Además de Meta, **cada evento se guarda en tu propia Google Sheet**, para que puedas analizar todo **sin entrar a Meta Ads**. Cada evento viaja simultáneamente a tres destinos con el mismo `event_id`:
+
+```
+Evento → Meta Pixel  +  Meta Conversions API  +  Google Sheets (Apps Script)
+```
+
+**Qué se registra** (pestaña `Eventos`, una fila por evento): `PageView`, `ViewContent`, `Scroll25/50/75/100`, `Tiempo30/60/120`, `ClickCategoria`, `Busqueda`, `Filtro`, `ClickMercadoLibre`, `Favorito`, `Error` — cada uno con producto, categoría, precio, URL destino, UTMs, `fbclid`/`gclid`, referrer, dispositivo, SO, navegador, resolución, idioma, país/ciudad, IP anonimizada, tiempo en página, scroll % y usuario/sesión anónimos.
+
+**El Apps Script arma solo** (y refresca cada 5 min):
+- Pestañas **Eventos, Productos, Campañas, Dashboard, Configuración**.
+- **Dashboard** con KPIs (usuarios hoy/7/30 días, PageViews, clicks, CTR, tiempo y scroll promedio, top categorías/campañas/fuentes…) y **10 gráficos** (clicks por día, top productos, categorías, fuentes, dispositivos, eventos por hora, campañas, usuarios por día, scroll por producto y el **embudo** PageView → ViewContent → Click).
+
+**Cómo activarlo**: seguí `apps-script/README.md` (pegás `Code.gs` en tu planilla, corrés `setup()`, publicás la Web App y cargás en Vercel `APPS_SCRIPT_WEBHOOK_URL` + `APPS_SCRIPT_WEBHOOK_TOKEN`). Si no lo configurás, el sitio funciona igual: la analítica a Sheets simplemente queda apagada.
+
+**Piezas de código** (todo additivo, no toca el flujo actual):
+- `lib/analytics.ts` — motor: identidad anónima, contexto (UTM/device/sesión), y despacho a los 3 destinos.
+- `lib/pixel.ts` — API de tracking que usan los componentes (wrappers finos).
+- `components/AnalyticsTracker.tsx` — PageView, scroll, tiempo y errores globales.
+- `app/api/track/route.ts` — reparte server-side a CAPI + Google Sheets (enriquece con geo/IP).
+- `apps-script/Code.gs` — webhook + dashboard.
+
+---
+
 ## 13. Preparado para el futuro
 
 La arquitectura ya deja lugar para, sin romper nada de lo existente:
 
 - **Login de administrador**: agregar `middleware.ts` + una tabla de usuarios (ej. con Vercel Postgres o Clerk/Auth.js) para proteger una futura ruta `/admin`.
-- **Panel de estadísticas / clics / visitas**: el botón "VER EN MERCADO LIBRE" en `components/ProductCard.tsx` es el lugar exacto para agregar un `onClick` que registre el evento (por ejemplo, contra una API route propia o directamente a Analytics).
-- **Google Analytics / Meta Pixel / TikTok Pixel**: se agregan como `<Script>` de `next/script` dentro de `app/layout.tsx`, dentro del `<body>`, con `strategy="afterInteractive"`.
+- **Panel de estadísticas / clics / visitas**: el clic en "VER EN MERCADO LIBRE" ya se captura en `components/BuyButton.tsx` (dispara el Meta Pixel); ese mismo `onClick` es el lugar para además registrarlo contra una API route propia o Analytics.
+- **Meta Pixel**: ya integrado (ver sección 12b). Para sumar **Google Analytics / TikTok Pixel** se replica el patrón: un componente con `<Script>` de `next/script` montado en `app/layout.tsx`, y los helpers de eventos en `lib/pixel.ts`.
 
 ---
 
