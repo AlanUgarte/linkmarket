@@ -87,11 +87,20 @@ const disc = (p, prev) => (prev && prev > p ? Math.round(((prev - p) / prev) * 1
 const bool = (v) => (String(v).trim().toUpperCase() === 'TRUE');
 
 async function main() {
-  // Catálogo desde la app (lib/catalogo-backup.json) — la planilla ya no es la
-  // fuente de verdad (se reestructuró con las pestañas de analytics).
-  process.stderr.write('Leyendo catálogo de la app...\n');
-  const backup = JSON.parse(fs.readFileSync(new URL('../lib/catalogo-backup.json', import.meta.url), 'utf8'));
-  const dataRows = backup
+  // Catálogo actual desde el sitio en vivo (/api/products) para tomar siempre
+  // los productos vigentes. Si falla, cae al backup del repo.
+  process.stderr.write('Leyendo catálogo del sitio...\n');
+  let catalogo;
+  try {
+    const res = await fetch('https://mercado-afiliados.vercel.app/api/products');
+    const j = await res.json();
+    catalogo = Array.isArray(j) ? j : (j.products || []);
+    if (catalogo.filter((p) => /meli\.la\//.test(p.linkAfiliado || '')).length < 200) throw new Error('pocos');
+  } catch {
+    process.stderr.write('(usando backup del repo)\n');
+    catalogo = JSON.parse(fs.readFileSync(new URL('../lib/catalogo-backup.json', import.meta.url), 'utf8'));
+  }
+  const dataRows = catalogo
     .filter((p) => /meli\.la\//.test(p.linkAfiliado || ''))
     .map((p) => { const r = []; r[1] = p.nombre || ''; r[C.link] = p.linkAfiliado; return r; });
   const targets = dataRows.slice(0, LIMIT);
