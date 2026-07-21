@@ -87,12 +87,13 @@ const disc = (p, prev) => (prev && prev > p ? Math.round(((prev - p) / prev) * 1
 const bool = (v) => (String(v).trim().toUpperCase() === 'TRUE');
 
 async function main() {
-  process.stderr.write('Bajando planilla...\n');
-  const csv = await (await fetch(CSV_URL)).text();
-  const rows = parseCsv(csv);
-  const header = rows[0];
-  const width = header.length;
-  const dataRows = rows.slice(1).filter((r) => r.some((c) => c && c.trim()));
+  // Catálogo desde la app (lib/catalogo-backup.json) — la planilla ya no es la
+  // fuente de verdad (se reestructuró con las pestañas de analytics).
+  process.stderr.write('Leyendo catálogo de la app...\n');
+  const backup = JSON.parse(fs.readFileSync(new URL('../lib/catalogo-backup.json', import.meta.url), 'utf8'));
+  const dataRows = backup
+    .filter((p) => /meli\.la\//.test(p.linkAfiliado || ''))
+    .map((p) => { const r = []; r[1] = p.nombre || ''; r[C.link] = p.linkAfiliado; return r; });
   const targets = dataRows.slice(0, LIMIT);
   process.stderr.write(`Revisando ${targets.length} productos (${CONCURRENCY} en paralelo)`);
 
