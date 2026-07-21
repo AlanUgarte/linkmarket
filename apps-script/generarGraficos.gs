@@ -11,6 +11,10 @@ function generarGraficos() {
   var calc = ss.getSheetByName('_Calc');
   if (!dash || !calc) throw new Error('Faltan las hojas Dashboard/_Calc. Corré setup() primero.');
 
+  // Los gráficos no dibujan datos de una hoja oculta: nos aseguramos que _Calc
+  // esté visible.
+  calc.showSheet();
+
   // Paleta (estilo Mercado Libre + acentos). El 1er color manda en series simples;
   // en tortas se reparte por porción.
   var PAL = ['#3483FA', '#00A650', '#FFB800', '#F23D4F', '#8E44AD', '#FF7733', '#16A085', '#2D3277', '#E67E22', '#5DADE2'];

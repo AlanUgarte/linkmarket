@@ -181,11 +181,12 @@ function ensureSheets_(ss) {
     ev.getRange(1, 1, 1, HEADERS.length).setFontWeight('bold').setBackground('#111111').setFontColor('#FFE600');
   }
 
-  // Ocultar hojas auxiliares.
-  [SHEETS.CALC, SHEETS.LOGS].forEach(function (n) {
-    var s = ss.getSheetByName(n);
-    if (s) s.hideSheet();
-  });
+  // Ocultar solo Logs. _Calc debe quedar VISIBLE: los gráficos del Dashboard
+  // leen de ahí, y Google Sheets no dibuja datos de una hoja oculta.
+  var logs = ss.getSheetByName(SHEETS.LOGS);
+  if (logs) logs.hideSheet();
+  var calc = ss.getSheetByName(SHEETS.CALC);
+  if (calc) calc.showSheet();
 }
 
 /** Valores iniciales de la pestaña Configuración. */
