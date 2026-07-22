@@ -3,8 +3,8 @@ import { Inter } from 'next/font/google';
 import { Suspense } from 'react';
 import './globals.css';
 import { SITE } from '@/lib/constants';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
+import V2Header from '@/components/v2/V2Header';
+import V2Footer from '@/components/v2/V2Footer';
 import MetaPixel from '@/components/MetaPixel';
 import AnalyticsTracker from '@/components/AnalyticsTracker';
 
@@ -112,9 +112,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           // eslint-disable-next-line react/no-danger
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        <Header />
+        <V2Header />
         <main className="flex-1">{children}</main>
-        <Footer />
+        <V2Footer />
       </body>
     </html>
   );
