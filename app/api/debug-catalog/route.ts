@@ -27,9 +27,12 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({
     productStatus: prodRes.status,
     buy_box_winner: prodJson?.buy_box_winner,
+    productKeys: prodJson ? Object.keys(prodJson) : [],
     productError: prodRes.ok ? undefined : prodJson,
     itemsStatus: itemsRes.status,
-    firstItem: itemsJson?.results?.[0],
+    allItems: (itemsJson?.results || []).map((r: { item_id: string; price: number; official_store_id?: number; seller_id: number }) => ({
+      item_id: r.item_id, price: r.price, official_store_id: r.official_store_id, seller_id: r.seller_id,
+    })),
     itemsError: itemsRes.ok ? undefined : itemsJson,
   });
 }
