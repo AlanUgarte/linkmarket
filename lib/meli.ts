@@ -177,37 +177,42 @@ function applyOffer(p: Product, m: MeliOffer | null): Product {
 /**
  * Pisa precio, precio anterior, descuento y envío gratis con los datos EN VIVO
  * de Mercado Libre para TODOS los productos:
- *  - con CatalogId → API oficial de catálogo (electrónica, electro, etc.).
- *  - sin CatalogId pero con link → se resuelve el link y se lee su precio real
- *    (perfumes, maquillaje: catálogos con muchos revendedores).
+ *  - con CatalogId → API oficial de catálogo (buy-box winner): es EXACTAMENTE
+ *    el precio que se ve en `linkProducto` (la página /p/MLA... a la que el
+ *    botón manda al visitante), sea cual sea el vendedor ganador — es la
+ *    fuente en vivo más confiable porque refleja la página de destino real.
+ *  - sin CatalogId (o si el catálogo no resolvió) → se lee la tarjeta
+ *    destacada del link de afiliado. OJO: esa tarjeta la sirve una caché de
+ *    recomendaciones de ML que puede quedar desactualizada por días —
+ *    por eso NO es la fuente primaria cuando hay catálogo disponible.
  * Si algo falla, el producto conserva los valores de la planilla — nunca rompe.
  */
 export async function syncWithMeli(products: Product[]): Promise<Product[]> {
   try {
-    // 1) Precio de la TARJETA de afiliado para TODOS: es exactamente el que ve
-    // y paga el comprador al abrir el link (el "mejor precio" que ML deja
-    // seleccionado). La API de catálogo (buy_box) a veces devuelve null
-    // (perfumes) o el precio de otro vendedor, dejando precios viejos.
-    const links = [...new Set(products.map((p) => p.linkAfiliado).filter((l) => /meli\.la\//.test(l)))];
-    const linkOffers = await resolveWithBudget(links, fetchLinkOffer, {
-      concurrency: 12,
-      budgetMs: 24000,
-    });
-
-    // 2) Catálogo SOLO como respaldo: cuando la tarjeta no resolvió y hay
-    // CatalogId (requiere token).
+    // 1) Catálogo (fuente primaria para productos con CatalogId).
     const token = await getAppToken();
-    const needCat = token ? products.filter((p) => p.catalogId && !linkOffers.get(p.linkAfiliado)) : [];
-    const catIds = [...new Set(needCat.map((p) => p.catalogId))];
+    const catIds = token ? [...new Set(products.map((p) => p.catalogId).filter(Boolean))] : [];
     const catOffers = await resolveWithBudget(catIds, (cid) => fetchOffer(cid, token!), {
       concurrency: 15,
-      budgetMs: 8000,
+      budgetMs: 20000,
+    });
+
+    // 2) Tarjeta: para productos SIN catálogo, y de respaldo si el catálogo
+    // no resolvió para alguno.
+    const needCard = products.filter((p) => !p.catalogId || !catOffers.get(p.catalogId));
+    const links = [...new Set(needCard.map((p) => p.linkAfiliado).filter((l) => /meli\.la\//.test(l)))];
+    const linkOffers = await resolveWithBudget(links, fetchLinkOffer, {
+      concurrency: 12,
+      budgetMs: 20000,
     });
 
     return products.map((p) => {
+      if (p.catalogId) {
+        const cat = catOffers.get(p.catalogId);
+        if (cat) return applyOffer(p, cat);
+      }
       const card = linkOffers.get(p.linkAfiliado);
       if (card) return applyOffer(p, card);
-      if (p.catalogId) return applyOffer(p, catOffers.get(p.catalogId) ?? null);
       return p;
     });
   } catch (error) {
