@@ -30,8 +30,8 @@ export async function GET(req: NextRequest) {
     productKeys: prodJson ? Object.keys(prodJson) : [],
     productError: prodRes.ok ? undefined : prodJson,
     itemsStatus: itemsRes.status,
-    allItems: (itemsJson?.results || []).map((r: { item_id: string; price: number; official_store_id?: number; seller_id: number }) => ({
-      item_id: r.item_id, price: r.price, official_store_id: r.official_store_id, seller_id: r.seller_id,
+    allItems: (itemsJson?.results || []).slice(0, 8).map((r: { item_id: string; price: number; official_store_id?: number; seller_id: number; tags?: string[]; available_quantity?: number }) => ({
+      item_id: r.item_id, price: r.price, official_store_id: r.official_store_id, seller_id: r.seller_id, tags: r.tags, available_quantity: r.available_quantity,
     })),
     itemsError: itemsRes.ok ? undefined : itemsJson,
   });
