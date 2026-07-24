@@ -36,6 +36,7 @@ interface MeliOffer {
   original_price?: number | null;
   shipping?: { free_shipping?: boolean };
   tags?: string[];
+  official_store_id?: number | null;
 }
 
 /**
@@ -57,20 +58,23 @@ async function fetchOffer(catalogId: string, token: string): Promise<MeliOffer |
     const w = d?.buy_box_winner;
     if (w && typeof w.price === 'number') return w;
   }
-  // 2) Fallback: sin buy_box_winner, /items no viene ordenado por relevancia y
-  // puede traer primero una publicación SIN STOCK (tag
-  // `meli_facilities_out_of_stock`) — eso mostraba un precio fantasma que el
-  // comprador nunca ve. Se descartan esas y se toma la más barata disponible.
+  // 2) Fallback: sin buy_box_winner, /items no viene ordenado por relevancia.
+  // Se arma un pool en cascada, cada vez más permisivo, y se toma la más
+  // barata DENTRO del primer pool no vacío:
+  //   a) Tienda oficial + con stock  (lo que ML prioriza como ganador real —
+  //      confirmado: para publicaciones con varias ofertas al mismo precio,
+  //      la de tienda oficial es la que ML muestra, no cualquier particular)
+  //   b) Con stock (sin tienda oficial disponible)
+  //   c) Todo (si ninguna tiene stock, mejor un precio viejo que nada)
   const res = await fetch(`${PRODUCTS_URL}/${catalogId}/items`, auth);
   if (!res.ok) return null;
   const data = await res.json();
-  const items: MeliOffer[] = data?.results ?? [];
-  const disponibles = items.filter(
-    (it) => typeof it.price === 'number' && !it.tags?.includes('meli_facilities_out_of_stock')
-  );
-  const pool = disponibles.length > 0 ? disponibles : items;
+  const items: MeliOffer[] = (data?.results ?? []).filter((it: MeliOffer) => typeof it.price === 'number');
+  const conStock = items.filter((it) => !it.tags?.includes('meli_facilities_out_of_stock'));
+  const oficialConStock = conStock.filter((it) => it.official_store_id != null);
+  const pool = oficialConStock.length > 0 ? oficialConStock : conStock.length > 0 ? conStock : items;
   const winner = pool.reduce<MeliOffer | null>(
-    (min, it) => (typeof it.price === 'number' && (!min || it.price! < min.price!) ? it : min),
+    (min, it) => (!min || it.price! < min.price!) ? it : min,
     null
   );
   return winner && typeof winner.price === 'number' ? winner : null;
