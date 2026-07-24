@@ -35,6 +35,8 @@ interface MeliOffer {
   price?: number;
   original_price?: number | null;
   shipping?: { free_shipping?: boolean };
+  tags?: string[];
+  official_store_id?: number | null;
 }
 
 /**
@@ -56,11 +58,31 @@ async function fetchOffer(catalogId: string, token: string): Promise<MeliOffer |
     const w = d?.buy_box_winner;
     if (w && typeof w.price === 'number') return w;
   }
-  // 2) Fallback: primer item del catálogo.
+  // 2) Fallback: sin buy_box_winner, /items no viene ordenado por relevancia.
+  //   a) Se descartan las publicaciones SIN STOCK (tag
+  //      `meli_facilities_out_of_stock`) — pueden traer un precio fantasma
+  //      que el comprador nunca ve.
+  //   b) Entre las disponibles, ML suele mostrar como ganadora la de tienda
+  //      oficial aunque haya un particular más barato — PERO solo cuando el
+  //      premio es razonable (~35%): un salto mayor casi siempre es una
+  //      variante/pack distinto agrupado bajo el mismo catálogo, no la misma
+  //      publicación a mayor precio. En ese caso se descarta y se usa la más
+  //      barata disponible, sea o no de tienda oficial.
   const res = await fetch(`${PRODUCTS_URL}/${catalogId}/items`, auth);
   if (!res.ok) return null;
   const data = await res.json();
-  const winner = data?.results?.[0];
+  const items: MeliOffer[] = (data?.results ?? []).filter((it: MeliOffer) => typeof it.price === 'number');
+  const conStock = items.filter((it) => !it.tags?.includes('meli_facilities_out_of_stock'));
+  const pool = conStock.length > 0 ? conStock : items;
+  const min = pool.reduce<MeliOffer | null>((m, it) => (!m || it.price! < m.price!) ? it : m, null);
+  const oficialesRazonables = pool.filter(
+    (it) => it.official_store_id != null && min && it.price! <= min.price! * 1.35
+  );
+  const oficialMasBarata = oficialesRazonables.reduce<MeliOffer | null>(
+    (m, it) => (!m || it.price! < m.price!) ? it : m,
+    null
+  );
+  const winner = oficialMasBarata ?? min;
   return winner && typeof winner.price === 'number' ? winner : null;
 }
 
@@ -177,37 +199,42 @@ function applyOffer(p: Product, m: MeliOffer | null): Product {
 /**
  * Pisa precio, precio anterior, descuento y envío gratis con los datos EN VIVO
  * de Mercado Libre para TODOS los productos:
- *  - con CatalogId → API oficial de catálogo (electrónica, electro, etc.).
- *  - sin CatalogId pero con link → se resuelve el link y se lee su precio real
- *    (perfumes, maquillaje: catálogos con muchos revendedores).
+ *  - con CatalogId → API oficial de catálogo (buy-box winner): es EXACTAMENTE
+ *    el precio que se ve en `linkProducto` (la página /p/MLA... a la que el
+ *    botón manda al visitante), sea cual sea el vendedor ganador — es la
+ *    fuente en vivo más confiable porque refleja la página de destino real.
+ *  - sin CatalogId (o si el catálogo no resolvió) → se lee la tarjeta
+ *    destacada del link de afiliado. OJO: esa tarjeta la sirve una caché de
+ *    recomendaciones de ML que puede quedar desactualizada por días —
+ *    por eso NO es la fuente primaria cuando hay catálogo disponible.
  * Si algo falla, el producto conserva los valores de la planilla — nunca rompe.
  */
 export async function syncWithMeli(products: Product[]): Promise<Product[]> {
   try {
-    // 1) Precio de la TARJETA de afiliado para TODOS: es exactamente el que ve
-    // y paga el comprador al abrir el link (el "mejor precio" que ML deja
-    // seleccionado). La API de catálogo (buy_box) a veces devuelve null
-    // (perfumes) o el precio de otro vendedor, dejando precios viejos.
-    const links = [...new Set(products.map((p) => p.linkAfiliado).filter((l) => /meli\.la\//.test(l)))];
-    const linkOffers = await resolveWithBudget(links, fetchLinkOffer, {
-      concurrency: 12,
-      budgetMs: 24000,
-    });
-
-    // 2) Catálogo SOLO como respaldo: cuando la tarjeta no resolvió y hay
-    // CatalogId (requiere token).
+    // 1) Catálogo (fuente primaria para productos con CatalogId).
     const token = await getAppToken();
-    const needCat = token ? products.filter((p) => p.catalogId && !linkOffers.get(p.linkAfiliado)) : [];
-    const catIds = [...new Set(needCat.map((p) => p.catalogId))];
+    const catIds = token ? [...new Set(products.map((p) => p.catalogId).filter(Boolean))] : [];
     const catOffers = await resolveWithBudget(catIds, (cid) => fetchOffer(cid, token!), {
       concurrency: 15,
-      budgetMs: 8000,
+      budgetMs: 20000,
+    });
+
+    // 2) Tarjeta: para productos SIN catálogo, y de respaldo si el catálogo
+    // no resolvió para alguno.
+    const needCard = products.filter((p) => !p.catalogId || !catOffers.get(p.catalogId));
+    const links = [...new Set(needCard.map((p) => p.linkAfiliado).filter((l) => /meli\.la\//.test(l)))];
+    const linkOffers = await resolveWithBudget(links, fetchLinkOffer, {
+      concurrency: 12,
+      budgetMs: 20000,
     });
 
     return products.map((p) => {
+      if (p.catalogId) {
+        const cat = catOffers.get(p.catalogId);
+        if (cat) return applyOffer(p, cat);
+      }
       const card = linkOffers.get(p.linkAfiliado);
       if (card) return applyOffer(p, card);
-      if (p.catalogId) return applyOffer(p, catOffers.get(p.catalogId) ?? null);
       return p;
     });
   } catch (error) {

@@ -67,6 +67,19 @@
   .text-balance {
     text-wrap: balance;
   }
+
+  /* Barra de beneficios que se desplaza sola (rediseño /v2). Dos copias del
+     contenido + translateX(-50%) = loop sin cortes. */
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  .animate-marquee {
+    animation: marquee 30s linear infinite;
+  }
+  .animate-marquee:hover {
+    animation-play-state: paused;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

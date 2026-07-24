@@ -4,7 +4,13 @@ import { syncWithMeli } from './meli';
 import { REVALIDATE_SECONDS, SHEET_GID } from './constants';
 import linkMap from './linkMap.json';
 import preciosJson from './precios.json';
+import catalogoBackup from './catalogo-backup.json';
 import { computeDiscount } from './utils';
+
+// Snapshot completo del catálogo (548 productos con todos sus campos). Se usa
+// solo como red de seguridad si la planilla viene rota. Regenerar con:
+// scripts/snapshot-catalogo (o guardando /api/products cuando esté sano).
+const CATALOGO_BACKUP = catalogoBackup as unknown as Product[];
 
 // Los `meli.la` abren el PERFIL en la web (forceInApp de ML), no el producto.
 // Este mapa (armado offline) traduce cada `meli.la` a su link directo de
@@ -171,6 +177,11 @@ export async function fetchProductsFromSheet(): Promise<Product[]> {
   return rowsToProducts(dataRows);
 }
 
+// Cantidad mínima de productos con link válido para confiar en la planilla.
+// Si devuelve menos (planilla vaciada, pestaña equivocada, estructura rota),
+// se usa el backup del catálogo para que el sitio NUNCA se rompa.
+const MIN_PRODUCTOS = 200;
+
 /** Punto único de acceso a los productos, cacheado por Next.js con ISR. */
 export async function getProducts(): Promise<Product[]> {
   let products: Product[];
@@ -181,8 +192,15 @@ export async function getProducts(): Promise<Product[]> {
     try {
       products = await fetchProductsFromSheet();
     } catch (error) {
-      console.error('[googleSheets] Error obteniendo productos:', error);
-      return [];
+      console.error('[googleSheets] Error obteniendo productos, usando backup:', error);
+      products = [];
+    }
+    // Red de seguridad: si la planilla vino rota/vacía/con otra estructura, usar
+    // el backup del catálogo (snapshot de los 548 productos completos).
+    const validos = products.filter((p) => /meli\.la\//.test(p.linkAfiliado)).length;
+    if (validos < MIN_PRODUCTOS) {
+      console.error(`[googleSheets] Planilla con ${validos} productos válidos (<${MIN_PRODUCTOS}). Usando backup.`);
+      products = CATALOGO_BACKUP;
     }
   }
   // 1) Precio base fresco (de la última "Revisa los precios") en vez del de la
