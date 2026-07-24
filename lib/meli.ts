@@ -59,24 +59,30 @@ async function fetchOffer(catalogId: string, token: string): Promise<MeliOffer |
     if (w && typeof w.price === 'number') return w;
   }
   // 2) Fallback: sin buy_box_winner, /items no viene ordenado por relevancia.
-  // Se arma un pool en cascada, cada vez más permisivo, y se toma la más
-  // barata DENTRO del primer pool no vacío:
-  //   a) Tienda oficial + con stock  (lo que ML prioriza como ganador real —
-  //      confirmado: para publicaciones con varias ofertas al mismo precio,
-  //      la de tienda oficial es la que ML muestra, no cualquier particular)
-  //   b) Con stock (sin tienda oficial disponible)
-  //   c) Todo (si ninguna tiene stock, mejor un precio viejo que nada)
+  //   a) Se descartan las publicaciones SIN STOCK (tag
+  //      `meli_facilities_out_of_stock`) — pueden traer un precio fantasma
+  //      que el comprador nunca ve.
+  //   b) Entre las disponibles, ML suele mostrar como ganadora la de tienda
+  //      oficial aunque haya un particular más barato — PERO solo cuando el
+  //      premio es razonable (~35%): un salto mayor casi siempre es una
+  //      variante/pack distinto agrupado bajo el mismo catálogo, no la misma
+  //      publicación a mayor precio. En ese caso se descarta y se usa la más
+  //      barata disponible, sea o no de tienda oficial.
   const res = await fetch(`${PRODUCTS_URL}/${catalogId}/items`, auth);
   if (!res.ok) return null;
   const data = await res.json();
   const items: MeliOffer[] = (data?.results ?? []).filter((it: MeliOffer) => typeof it.price === 'number');
   const conStock = items.filter((it) => !it.tags?.includes('meli_facilities_out_of_stock'));
-  const oficialConStock = conStock.filter((it) => it.official_store_id != null);
-  const pool = oficialConStock.length > 0 ? oficialConStock : conStock.length > 0 ? conStock : items;
-  const winner = pool.reduce<MeliOffer | null>(
-    (min, it) => (!min || it.price! < min.price!) ? it : min,
+  const pool = conStock.length > 0 ? conStock : items;
+  const min = pool.reduce<MeliOffer | null>((m, it) => (!m || it.price! < m.price!) ? it : m, null);
+  const oficialesRazonables = pool.filter(
+    (it) => it.official_store_id != null && min && it.price! <= min.price! * 1.35
+  );
+  const oficialMasBarata = oficialesRazonables.reduce<MeliOffer | null>(
+    (m, it) => (!m || it.price! < m.price!) ? it : m,
     null
   );
+  const winner = oficialMasBarata ?? min;
   return winner && typeof winner.price === 'number' ? winner : null;
 }
 
