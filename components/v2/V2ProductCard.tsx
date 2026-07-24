@@ -1,17 +1,17 @@
 import Image from 'next/image';
-import { ArrowUpRight } from 'lucide-react';
 import { Product } from '@/lib/types';
-import { formatPrice, ensureAffiliateLink } from '@/lib/utils';
+import { formatPrice } from '@/lib/utils';
+import ProductImpression from '@/components/ProductImpression';
+import V2BuyButton from './V2BuyButton';
 
 /**
  * Tarjeta de producto del rediseño /v2. Estilo "medio de ofertas" premium.
  * Badges 100% reales (más vendido, % off, envío gratis). Sin ratings inventados.
  */
 export default function V2ProductCard({ product, priority = false }: { product: Product; priority?: boolean }) {
-  const href = ensureAffiliateLink(product.linkProducto || product.linkAfiliado);
-
   return (
     <article className="group relative flex flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_32px_-12px_rgba(15,23,42,0.18)] hover:border-slate-300">
+      <ProductImpression product={product} />
       {/* Imagen */}
       <div className="relative aspect-[4/5] w-full overflow-hidden bg-white">
         {product.imagen ? (
@@ -66,15 +66,7 @@ export default function V2ProductCard({ product, priority = false }: { product: 
           )}
         </div>
 
-        <a
-          href={href}
-          target="_blank"
-          rel="nofollow sponsored noopener"
-          className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-amber-400 px-3 py-3 text-sm font-bold text-slate-900 shadow-[0_2px_0_rgba(0,0,0,0.06)] transition-all duration-200 hover:bg-amber-300 hover:shadow-md active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-        >
-          Ver oferta en Mercado Libre
-          <ArrowUpRight size={16} strokeWidth={2.75} aria-hidden="true" />
-        </a>
+        <V2BuyButton product={product} />
       </div>
     </article>
   );

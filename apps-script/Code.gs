@@ -161,7 +161,7 @@ function setup() {
   seedConfig_(ss);
   buildDashboardLayout_(ss);
   rebuildDashboard();
-  buildCharts_(ss);
+  generarGraficos(); // gráficos con estilo (ver generarGraficos.gs)
   installTrigger_();
   SpreadsheetApp.getUi &&
     tryUi_('LinkMarket Analytics', 'Setup completado. Ya podés implementar la Web App.');
@@ -181,11 +181,12 @@ function ensureSheets_(ss) {
     ev.getRange(1, 1, 1, HEADERS.length).setFontWeight('bold').setBackground('#111111').setFontColor('#FFE600');
   }
 
-  // Ocultar hojas auxiliares.
-  [SHEETS.CALC, SHEETS.LOGS].forEach(function (n) {
-    var s = ss.getSheetByName(n);
-    if (s) s.hideSheet();
-  });
+  // Ocultar solo Logs. _Calc debe quedar VISIBLE: los gráficos del Dashboard
+  // leen de ahí, y Google Sheets no dibuja datos de una hoja oculta.
+  var logs = ss.getSheetByName(SHEETS.LOGS);
+  if (logs) logs.hideSheet();
+  var calc = ss.getSheetByName(SHEETS.CALC);
+  if (calc) calc.showSheet();
 }
 
 /** Valores iniciales de la pestaña Configuración. */
@@ -237,7 +238,9 @@ function rebuildDashboard() {
   var ev = ss.getSheetByName(SHEETS.EVENTOS);
   var lastRow = ev.getLastRow();
   var rows = lastRow > 1 ? ev.getRange(2, 1, lastRow - 1, HEADERS.length).getValues() : [];
-  var tz = ss.getSpreadsheetTimeZone();
+  // Fallback: en algunas planillas getSpreadsheetTimeZone() viene vacío y
+  // Utilities.formatDate exige un string válido (si no, tira "Invalid timeZone").
+  var tz = ss.getSpreadsheetTimeZone() || 'America/Argentina/Buenos_Aires';
 
   var agg = aggregate_(rows, tz);
 
