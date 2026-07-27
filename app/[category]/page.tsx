@@ -25,7 +25,7 @@ export async function generateMetadata({
   const category = getCategoryBySlug(slug);
   if (!category) return {};
 
-  const title = `${category.emoji} ${category.nombre}`;
+  const title = category.nombre;
   const description = category.descripcion;
   const url = `${SITE.url}/${category.slug}`;
 
@@ -110,10 +110,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
       <CategoryViewTracker name={category.nombre} />
 
       <header className="mb-6 flex flex-col gap-1.5">
-        <h1 className="text-display-md text-ink flex items-center gap-2.5">
-          <span aria-hidden="true">{category.emoji}</span>
-          {category.nombre}
-        </h1>
+        <h1 className="text-display-md text-ink">{category.nombre}</h1>
         <p className="text-ink-faint text-sm">{category.descripcion}</p>
       </header>
 
