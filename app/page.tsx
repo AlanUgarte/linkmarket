@@ -1,53 +1,8 @@
-import Link from 'next/link';
-import type { LucideIcon } from 'lucide-react';
-import {
-  ArrowRight, Check, Star, TrendingUp, BadgePercent, Sparkles,
-  Car, Home as HomeIcon, Refrigerator, Tv, PawPrint, Wrench, Baby, Dumbbell,
-  SprayCan, Stethoscope, ToyBrick, Smartphone, Laptop, Gamepad2, Store, Tag,
-} from 'lucide-react';
+import { ArrowRight, Check, Star, TrendingUp, BadgePercent, Sparkles } from 'lucide-react';
 import { getProducts } from '@/lib/googleSheets';
-import { NAV_CATEGORIES } from '@/lib/categories';
-import { Product, Category } from '@/lib/types';
+import { Product } from '@/lib/types';
 import V2ProductCard from '@/components/v2/V2ProductCard';
-
-// Ícono profesional (lucide) por rubro y por categoría suelta. Reemplaza a los emojis.
-const GROUP_ICONS: Record<string, LucideIcon> = {
-  'Auto y Moto': Car,
-  Hogar: HomeIcon,
-  Electrodomésticos: Refrigerator,
-  Tecnología: Tv,
-  Mascotas: PawPrint,
-  Herramientas: Wrench,
-  Bebés: Baby,
-  'Deportes y Fitness': Dumbbell,
-  Perfumes: SprayCan,
-  'Belleza y Cuidado Personal': Sparkles,
-  Salud: Stethoscope,
-};
-const STANDALONE_ICONS: Record<string, LucideIcon> = {
-  'juguetes-y-juegos': ToyBrick,
-  celulares: Smartphone,
-  computacion: Laptop,
-  gaming: Gamepad2,
-  'equipamiento-comercial': Store,
-};
-
-// Agrupa las categorías por rubro (una sola vez, es estático).
-const CATEGORY_GROUPS = (() => {
-  const groups: { name: string; items: Category[] }[] = [];
-  const standalone: Category[] = [];
-  const seen = new Set<string>();
-  for (const c of NAV_CATEGORIES) {
-    if (!c.grupo) {
-      standalone.push(c);
-      continue;
-    }
-    if (seen.has(c.grupo)) continue;
-    seen.add(c.grupo);
-    groups.push({ name: c.grupo, items: NAV_CATEGORIES.filter((x) => x.grupo === c.grupo) });
-  }
-  return { groups, standalone };
-})();
+import CategoryExplorer from '@/components/v2/CategoryExplorer';
 
 // Ver nota sobre este literal en otras rutas.
 export const revalidate = 60;
@@ -117,63 +72,7 @@ export default async function HomePage() {
           <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">Explorá por categoría</h2>
           <p className="mt-1 text-sm text-slate-500">Descubrí lo mejor de cada rubro, ya seleccionado.</p>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {CATEGORY_GROUPS.groups.map((g) => {
-            const Icon = GROUP_ICONS[g.name] ?? Tag;
-            return (
-              <div
-                key={g.name}
-                className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-shadow hover:shadow-md"
-              >
-                <div className="mb-3 flex items-center gap-2.5">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-amber-400">
-                    <Icon size={20} strokeWidth={2} aria-hidden="true" />
-                  </span>
-                  <h3 className="text-[15px] font-bold tracking-tight text-slate-900">{g.name}</h3>
-                </div>
-                <ul className="flex flex-wrap gap-1.5">
-                  {g.items.map((it) => (
-                    <li key={it.slug}>
-                      <Link
-                        href={`/${it.slug}`}
-                        className="inline-flex rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[13px] font-medium text-slate-700 transition-colors hover:border-amber-300 hover:bg-amber-50 hover:text-slate-900"
-                      >
-                        {it.nombre}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            );
-          })}
-
-          {CATEGORY_GROUPS.standalone.length > 0 && (
-            <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-shadow hover:shadow-md">
-              <div className="mb-3 flex items-center gap-2.5">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-amber-400">
-                  <Tag size={20} strokeWidth={2} aria-hidden="true" />
-                </span>
-                <h3 className="text-[15px] font-bold tracking-tight text-slate-900">Más categorías</h3>
-              </div>
-              <ul className="flex flex-wrap gap-1.5">
-                {CATEGORY_GROUPS.standalone.map((it) => {
-                  const Icon = STANDALONE_ICONS[it.slug] ?? Tag;
-                  return (
-                    <li key={it.slug}>
-                      <Link
-                        href={`/${it.slug}`}
-                        className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[13px] font-medium text-slate-700 transition-colors hover:border-amber-300 hover:bg-amber-50 hover:text-slate-900"
-                      >
-                        <Icon size={14} strokeWidth={2} aria-hidden="true" />
-                        {it.nombre}
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          )}
-        </div>
+        <CategoryExplorer />
       </section>
 
       {/* BANDA DE OFERTAS */}
