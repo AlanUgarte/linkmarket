@@ -1,0 +1,49 @@
+name: Revisar precios
+
+# Corre la revisión de precios automáticamente cada 5 horas: baja la planilla,
+# resuelve cada link de Mercado Libre y actualiza lib/precios.json + linkMap.json.
+# Si hay cambios, commitea y pushea a main → Vercel deploya solo.
+
+on:
+  schedule:
+    - cron: '0 */5 * * *' # cada 5 horas (en UTC)
+  workflow_dispatch: {} # también permite dispararlo a mano desde la pestaña Actions
+
+# Necesario para que el job pueda pushear el commit con los precios nuevos.
+permissions:
+  contents: write
+
+# Evita que dos corridas se pisen.
+concurrency:
+  group: revisar-precios
+  cancel-in-progress: false
+
+jobs:
+  revisar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Revisar precios
+        run: node scripts/revisar-precios.mjs
+        env:
+          CONCURRENCY: '10'
+
+      - name: Commit y push si cambió algo
+        run: |
+          if [ -n "$(git status --porcelain lib/precios.json lib/linkMap.json)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add lib/precios.json lib/linkMap.json
+            git commit -m "Revisa los precios (automático cada 5h)"
+            git push
+            echo "Precios actualizados y pusheados."
+          else
+            echo "Sin cambios de precios; no se commitea."
+          fi
