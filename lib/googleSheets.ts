@@ -5,12 +5,26 @@ import { REVALIDATE_SECONDS, SHEET_GID } from './constants';
 import linkMap from './linkMap.json';
 import preciosJson from './precios.json';
 import catalogoBackup from './catalogo-backup.json';
+import productosExtra from './productos-extra.json';
 import { computeDiscount } from './utils';
 
 // Snapshot completo del catálogo (548 productos con todos sus campos). Se usa
 // solo como red de seguridad si la planilla viene rota. Regenerar con:
 // scripts/snapshot-catalogo (o guardando /api/products cuando esté sano).
 const CATALOGO_BACKUP = catalogoBackup as unknown as Product[];
+
+// Productos extra cargados por código (no están en la planilla). Se fusionan
+// con los de la planilla en getProducts, para agregar productos sin tocar el
+// Google Sheet. Se deduplican por linkAfiliado.
+const PRODUCTOS_EXTRA = productosExtra as unknown as Product[];
+
+/** Agrega los productos extra que no estén ya presentes (por linkAfiliado). */
+function withExtras(products: Product[]): Product[] {
+  if (!PRODUCTOS_EXTRA.length) return products;
+  const links = new Set(products.map((p) => p.linkAfiliado));
+  const nuevos = PRODUCTOS_EXTRA.filter((p) => !links.has(p.linkAfiliado));
+  return nuevos.length ? [...products, ...nuevos] : products;
+}
 
 // Los `meli.la` abren el PERFIL en la web (forceInApp de ML), no el producto.
 // Este mapa (armado offline) traduce cada `meli.la` a su link directo de
@@ -205,6 +219,8 @@ export async function getProducts(): Promise<Product[]> {
   }
   // 1) Precio base fresco (de la última "Revisa los precios") en vez del de la
   //    planilla. 2) Resolver link del botón + CatalogId. 3) Sync en vivo arriba.
+  // Sumar los productos extra (cargados por código, no están en la planilla).
+  products = withExtras(products);
   const resolved = products.map(withPrecioFresco).map(withResolvedLink);
   return syncWithMeli(resolved);
 }
