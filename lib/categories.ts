@@ -28,6 +28,7 @@ export const CATEGORIES: Category[] = [
   { slug: 'auriculares', nombre: 'Auriculares', emoji: '🎧', descripcion: 'Auriculares inalámbricos, in-ear y gamer.', grupo: 'Tecnología', grupoEmoji: '💡' },
   { slug: 'celulares', nombre: 'Celulares', emoji: '📱', descripcion: 'Celulares y accesorios al mejor precio.' },
   { slug: 'computacion', nombre: 'Computación', emoji: '💻', descripcion: 'PC armadas, componentes, monitores y periféricos.' },
+  { slug: 'relojes', nombre: 'Relojes', emoji: '⌚', descripcion: 'Relojes de pulsera y smartwatches al mejor precio.' },
   { slug: 'alimento-para-mascotas', nombre: 'Alimento para Mascotas', emoji: '🦴', descripcion: 'Alimento balanceado para perros y gatos.', grupo: 'Mascotas', grupoEmoji: '🐶' },
   { slug: 'accesorios-para-mascotas', nombre: 'Accesorios para Mascotas', emoji: '🐾', descripcion: 'Camas, juguetes, correas y más para tu mascota.', grupo: 'Mascotas', grupoEmoji: '🐶' },
   { slug: 'herramientas', nombre: 'Herramientas', emoji: '🛠', descripcion: 'Herramientas profesionales al mejor precio.', grupo: 'Herramientas', grupoEmoji: '🛠' },
