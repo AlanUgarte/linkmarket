@@ -102,7 +102,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <html lang="es-AR" className={inter.variable}>
-      <body className="min-h-screen flex flex-col font-sans">
+      <body className="min-h-screen flex flex-col font-sans bg-base-950 text-ink">
         <MetaPixel />
         <Suspense fallback={null}>
           <AnalyticsTracker />

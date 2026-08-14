@@ -109,9 +109,9 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
 
       <CategoryViewTracker name={category.nombre} />
 
-      <header className="mb-6 flex flex-col gap-1.5">
-        <h1 className="text-display-md text-ink">{category.nombre}</h1>
-        <p className="text-ink-faint text-sm">{category.descripcion}</p>
+      <header className="mb-5 flex flex-col gap-1">
+        <h1 className="text-2xl font-semibold tracking-tight text-ink">{category.nombre}</h1>
+        <p className="text-ink-dim text-sm">{category.descripcion}</p>
       </header>
 
       <ProductExplorer products={items} initialSort={sort} />

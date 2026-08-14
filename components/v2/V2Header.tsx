@@ -1,68 +1,56 @@
 import Link from 'next/link';
-import { Search, Zap } from 'lucide-react';
+import { Search, ShoppingCart, MapPin } from 'lucide-react';
 
-/** Header del rediseño /v2: barra de beneficios + header sticky con buscador. */
+/** Header estilo Mercado Libre: barra amarilla con logo + buscador + carrito, y nav debajo. */
 export default function V2Header() {
   return (
-    <div className="sticky top-0 z-50">
-      {/* Barra superior de beneficios: se desplaza sola (marquee) */}
-      <div className="overflow-hidden bg-slate-900 py-1.5 text-slate-200">
-        <div className="flex w-max animate-marquee whitespace-nowrap">
-          {[0, 1].map((copy) => (
-            <div key={copy} className="flex shrink-0" aria-hidden={copy === 1}>
-              {[
-                '🚚 Envío rápido',
-                '⭐ Recomendaciones seleccionadas',
-                '🔥 Ofertas actualizadas a diario',
-                '💲 Descuentos destacados',
-                '🛡️ Vendedores confiables',
-                '⚡ Productos virales del momento',
-              ].map((b) => (
-                <span key={b} className="mx-6 text-[12px] font-medium">{b}</span>
-              ))}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Header */}
-      <header className="border-b border-slate-200/80 bg-white/90 backdrop-blur-lg">
-        <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 sm:gap-6 sm:px-6">
+    <header className="sticky top-0 z-50">
+      {/* Barra amarilla principal */}
+      <div className="bg-ml-yellow">
+        <div className="mx-auto flex max-w-[1200px] items-center gap-4 px-4 py-2.5">
+          {/* Logo */}
           <Link href="/" className="flex shrink-0 items-center gap-2" aria-label="Inicio">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-amber-500 font-black text-slate-900">
-              L
-            </span>
-            <span className="hidden text-lg font-extrabold tracking-tight text-slate-900 sm:block">
-              Link<span className="text-amber-500">Market</span>
+            <span className="flex h-8 w-9 items-center justify-center rounded bg-white text-sm font-black text-ink shadow-sm">L</span>
+            <span className="hidden text-lg font-bold tracking-tight text-ink sm:block">
+              Link<span className="text-ink/70">Market</span>
             </span>
           </Link>
 
+          {/* Buscador */}
           <form action="/buscar" method="get" role="search" className="relative flex-1">
-            <Search size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true" />
             <input
               type="text"
               name="q"
-              placeholder="Buscar productos, marcas y ofertas..."
+              placeholder="Buscar productos, marcas y más..."
               aria-label="Buscar productos"
-              className="w-full rounded-full border border-slate-200 bg-slate-50 py-2.5 pl-11 pr-4 text-sm text-slate-800 placeholder:text-slate-400 outline-none transition-colors focus:border-slate-300 focus:bg-white focus:ring-2 focus:ring-amber-200"
+              className="w-full rounded-sm bg-white py-2.5 pl-4 pr-11 text-sm text-ink shadow-[0_1px_2px_rgba(0,0,0,0.2)] outline-none placeholder:text-ink-faint"
             />
+            <button type="submit" aria-label="Buscar" className="absolute right-0 top-0 flex h-full w-11 items-center justify-center border-l border-line text-ink-dim hover:text-ink">
+              <Search size={18} aria-hidden="true" />
+            </button>
           </form>
 
-          <nav className="hidden items-center gap-6 text-sm font-medium text-slate-600 lg:flex">
-            <Link href="/#categorias" className="transition-colors hover:text-slate-900">Categorías</Link>
-            <Link href="/#tendencia" className="transition-colors hover:text-slate-900">Tendencia</Link>
-            <Link href="/#descuentos" className="transition-colors hover:text-slate-900">Descuentos</Link>
-          </nav>
-
-          <Link
-            href="/#ofertas"
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-slate-900 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:bg-slate-800 active:scale-95"
-          >
-            <Zap size={15} className="text-amber-400" aria-hidden="true" />
-            <span className="hidden sm:inline">Ver ofertas</span>
+          {/* Carrito */}
+          <Link href="/#ofertas" aria-label="Ofertas" className="hidden shrink-0 items-center gap-1.5 text-ink hover:text-ink/70 sm:flex">
+            <ShoppingCart size={22} aria-hidden="true" />
           </Link>
         </div>
-      </header>
-    </div>
+      </div>
+
+      {/* Nav secundaria (blanca) */}
+      <div className="border-b border-line bg-white">
+        <div className="mx-auto flex max-w-[1200px] items-center gap-5 px-4 py-1.5 text-[13px] text-ink-dim">
+          <span className="hidden items-center gap-1 text-ink-dim sm:flex">
+            <MapPin size={15} aria-hidden="true" /> Enviar a todo el país
+          </span>
+          <nav className="flex items-center gap-5 overflow-x-auto whitespace-nowrap">
+            <Link href="/#categorias" className="hover:text-ml-blue">Categorías</Link>
+            <Link href="/#ofertas" className="hover:text-ml-blue">Ofertas</Link>
+            <Link href="/#tendencia" className="hover:text-ml-blue">Tendencia</Link>
+            <Link href="/#descuentos" className="hover:text-ml-blue">Más vendidos</Link>
+          </nav>
+        </div>
+      </div>
+    </header>
   );
 }
