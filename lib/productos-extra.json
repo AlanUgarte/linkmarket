@@ -284,5 +284,27 @@
   "catalogId": "MLA42135256",
   "etiqueta": "",
   "linkProducto": "https://www.mercadolibre.com.ar/perfume-hombre-king-of-seduction-absolute-edt-100ml-banderas/p/MLA42135256?matt_tool=98604370&matt_word=ugartestore"
+ },
+ {
+  "id": "perfumes-hombre-perfume-polo-blue-edt-125ml-para-hombre-ralph-lauren-1100",
+  "categoria": "Perfumes Hombre",
+  "categoriaSlug": "perfumes-hombre",
+  "nombre": "Perfume Polo Blue EDT 125ml para Hombre Ralph Lauren",
+  "descripcion": "Ralph Lauren Polo Blue EDT 125ml para hombre. Fragancia fresca y acuática.",
+  "precio": 254250,
+  "precioAnterior": 339000,
+  "descuento": 25,
+  "imagen": "https://http2.mlstatic.com/D_Q_NP_2X_787370-MLA83427431833_032025-V.webp",
+  "linkAfiliado": "https://meli.la/25RtvN5",
+  "activo": true,
+  "orden": 37,
+  "destacado": false,
+  "masVendido": false,
+  "fechaAgregado": "2026-08-15",
+  "envioGratis": true,
+  "itemId": "",
+  "catalogId": "MLA6093095",
+  "etiqueta": "",
+  "linkProducto": "https://www.mercadolibre.com.ar/perfume-polo-blue-edt-125ml-para-hombre-ralph-lauren/p/MLA6093095?matt_tool=98604370&matt_word=ugartestore"
  }
 ]
